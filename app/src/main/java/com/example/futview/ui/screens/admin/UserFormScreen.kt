@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.GppGood
 import androidx.compose.material.icons.outlined.Mail
 import androidx.compose.material.icons.outlined.ManageAccounts
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.PersonAdd
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.HorizontalDivider
@@ -52,6 +53,7 @@ import com.example.futview.ui.components.FormLabel
 import com.example.futview.ui.components.FormTextField
 import com.example.futview.ui.components.InfoNote
 import com.example.futview.ui.components.InfoPill
+import com.example.futview.ui.components.PrimaryButton
 import com.example.futview.ui.components.RoleBadge
 import com.example.futview.ui.components.SegmentedControl
 import com.example.futview.ui.theme.Border
@@ -62,7 +64,9 @@ import com.example.futview.ui.theme.TextPrimary
 import com.example.futview.ui.theme.TextSecondary
 
 @Composable
-fun UserFormScreen() {
+fun UserFormScreen(
+    onInviteUser: () -> Unit = {}
+) {
     val context = LocalContext.current
 
     var name by rememberSaveable { mutableStateOf("Camila Morales") }
@@ -82,6 +86,15 @@ fun UserFormScreen() {
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item { DemoBanner() }
+
+            item {
+                PrimaryButton(
+                    text = "Invitar usuario",
+                    onClick = onInviteUser,
+                    icon = Icons.Outlined.PersonAdd,
+                    modifier = Modifier.padding(horizontal = 20.dp)
+                )
+            }
 
             item {
                 FormCard(

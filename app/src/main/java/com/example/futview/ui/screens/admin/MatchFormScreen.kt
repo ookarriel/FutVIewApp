@@ -58,7 +58,9 @@ import com.example.futview.ui.theme.TextPrimary
 import com.example.futview.ui.theme.TextSecondary
 
 @Composable
-fun MatchFormScreen() {
+fun MatchFormScreen(
+    onDelete: () -> Unit = {}
+) {
     val context = LocalContext.current
 
     var date by rememberSaveable { mutableStateOf("19/02/2027") }
@@ -179,9 +181,7 @@ fun MatchFormScreen() {
                         onEdit = {
                             Toast.makeText(context, "Edición habilitada", Toast.LENGTH_SHORT).show()
                         },
-                        onDelete = {
-                            Toast.makeText(context, "Partido eliminado", Toast.LENGTH_SHORT).show()
-                        }
+                        onDelete = onDelete
                     )
                 }
             }

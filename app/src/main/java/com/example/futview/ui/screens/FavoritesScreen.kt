@@ -42,6 +42,7 @@ import com.example.futview.data.Stadium
 import com.example.futview.data.Team
 import com.example.futview.ui.components.Crest
 import com.example.futview.ui.components.DemoBanner
+import com.example.futview.ui.components.EmptyState
 import com.example.futview.ui.components.FilterPill
 import com.example.futview.ui.components.FutViewSearchField
 import com.example.futview.ui.components.InfoNote
@@ -66,7 +67,9 @@ fun FavoritesScreen(
     onToggleTeamFavorite: (String) -> Unit,
     onToggleMatchFavorite: (String) -> Unit,
     onToggleStadiumFavorite: (String) -> Unit,
-    onAvatarClick: () -> Unit
+    onAvatarClick: () -> Unit,
+    onExploreTeams: () -> Unit,
+    onViewMatches: () -> Unit
 ) {
     SetStatusBarAppearance(lightIcons = true)
 
@@ -263,13 +266,37 @@ fun FavoritesScreen(
                 }
             }
 
-            if (visibleTeams.isEmpty() && visibleMatches.isEmpty() && visibleStadiums.isEmpty()) {
+            if (total == 0) {
+                item {
+                    EmptyState(
+                        icon = Icons.Outlined.StarBorder,
+                        title = "Tu selección empieza aquí",
+                        message = "Todavía no guardas favoritos. Sigue los clubes, partidos y estadios que más te interesan.",
+                        primaryText = "Explorar equipos",
+                        onPrimary = onExploreTeams,
+                        secondaryText = "Ver próximos partidos",
+                        onSecondary = onViewMatches,
+                        modifier = Modifier.padding(horizontal = 20.dp)
+                    )
+                }
+            } else if (visibleTeams.isEmpty() && visibleMatches.isEmpty() && visibleStadiums.isEmpty()) {
                 item {
                     Text(
-                        text = "Aún no tienes favoritos en esta sección. Toca una estrella para guardar equipos, partidos o estadios.",
+                        text = "No encontramos favoritos con esos filtros. Toca una estrella para guardar equipos, partidos o estadios.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextSecondary,
                         modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)
+                    )
+                }
+            }
+
+            if (total > 0) {
+                item {
+                    Text(
+                        text = "Los favoritos se guardan en tu cuenta y solo tú puedes verlos.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
                     )
                 }
             }

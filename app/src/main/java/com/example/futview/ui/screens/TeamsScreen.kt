@@ -1,6 +1,7 @@
 package com.example.futview.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountBalance
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,6 +40,7 @@ import com.example.futview.data.FutViewData
 import com.example.futview.data.Team
 import com.example.futview.ui.components.Crest
 import com.example.futview.ui.components.DemoBanner
+import com.example.futview.ui.components.EmptyState
 import com.example.futview.ui.components.FilterDropdownPill
 import com.example.futview.ui.components.FilterPill
 import com.example.futview.ui.components.FutViewSearchField
@@ -57,7 +60,8 @@ import com.example.futview.ui.theme.TextTertiary
 fun TeamsScreen(
     favoriteTeamIds: List<String>,
     onToggleTeamFavorite: (String) -> Unit,
-    onAvatarClick: () -> Unit
+    onAvatarClick: () -> Unit,
+    onTeamClick: (String) -> Unit
 ) {
     SetStatusBarAppearance(lightIcons = true)
 
@@ -153,17 +157,30 @@ fun TeamsScreen(
                     team = team,
                     favorite = team.id in favoriteTeamIds,
                     onToggleFavorite = { onToggleTeamFavorite(team.id) },
+                    onClick = { onTeamClick(team.id) },
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
 
             if (filtered.isEmpty()) {
                 item {
-                    Text(
-                        text = "No encontramos clubes con esos filtros.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)
+                    EmptyState(
+                        icon = Icons.Outlined.SearchOff,
+                        title = "No encontramos ese equipo",
+                        message = "No hay coincidencias para \"$query\" en los clubes de la competición. Revisa la escritura o busca por ciudad.",
+                        primaryText = "Limpiar búsqueda y filtros",
+                        onPrimary = {
+                            query = ""
+                            filter = "Todos"
+                            city = "Todas las ciudades"
+                        },
+                        secondaryText = "Ver todos los equipos",
+                        onSecondary = {
+                            query = ""
+                            filter = "Todos"
+                            city = "Todas las ciudades"
+                        },
+                        modifier = Modifier.padding(horizontal = 20.dp)
                     )
                 }
             }
@@ -182,6 +199,7 @@ private fun TeamCard(
     team: Team,
     favorite: Boolean,
     onToggleFavorite: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -189,6 +207,7 @@ private fun TeamCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
             .background(Card)
+            .clickable(onClick = onClick)
             .padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {

@@ -1439,3 +1439,173 @@ fun StatusChip(
     }
 }
 
+/** Botón de ancho completo con borde (acciones secundarias tipo "Volver a…"). */
+@Composable
+fun OutlineButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+    enabled: Boolean = true
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(Card)
+            .border(1.dp, Border, RoundedCornerShape(10.dp))
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        if (icon != null) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (enabled) TextPrimary else TextTertiary,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+        }
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleSmall,
+            color = if (enabled) TextPrimary else TextTertiary,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
+
+/** Fila etiqueta + valor usada en las fichas de detalle. */
+@Composable
+fun DetailField(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(
+            text = label.uppercase(),
+            style = MaterialTheme.typography.labelSmall,
+            color = TextSecondary,
+            letterSpacing = 0.6.sp
+        )
+        Spacer(Modifier.height(3.dp))
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = TextPrimary
+        )
+    }
+}
+
+/** Fila de ajuste con interruptor visual (Configuración, Notificaciones…). */
+@Composable
+fun ToggleRow(
+    title: String,
+    subtitle: String,
+    enabled: Boolean,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .background(Card)
+            .clickable(onClick = onToggle)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                color = TextPrimary
+            )
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = TextSecondary
+            )
+        }
+        Spacer(Modifier.width(12.dp))
+        Box(
+            modifier = Modifier
+                .width(46.dp)
+                .height(26.dp)
+                .clip(RoundedCornerShape(50))
+                .background(if (enabled) Ink else FieldStrong),
+            contentAlignment = if (enabled) Alignment.CenterEnd else Alignment.CenterStart
+        ) {
+            Box(
+                modifier = Modifier
+                    .padding(3.dp)
+                    .size(20.dp)
+                    .clip(CircleShape)
+                    .background(Color.White)
+            )
+        }
+    }
+}
+
+/** Estado vacío / error centrado con acciones principales. */
+@Composable
+fun EmptyState(
+    icon: ImageVector,
+    title: String,
+    message: String,
+    primaryText: String,
+    onPrimary: () -> Unit,
+    modifier: Modifier = Modifier,
+    secondaryText: String? = null,
+    onSecondary: (() -> Unit)? = null
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(Card)
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(58.dp)
+                .clip(CircleShape)
+                .background(Field),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = TextPrimary,
+                modifier = Modifier.size(27.dp)
+            )
+        }
+        Spacer(Modifier.height(14.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = TextPrimary,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodySmall,
+            color = TextSecondary,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(18.dp))
+        PrimaryButton(text = primaryText, onClick = onPrimary)
+        if (secondaryText != null && onSecondary != null) {
+            Spacer(Modifier.height(10.dp))
+            OutlineButton(text = secondaryText, onClick = onSecondary)
+        }
+    }
+}
+

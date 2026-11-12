@@ -45,7 +45,8 @@ fun MatchesScreen(
     favoriteTeamIds: List<String>,
     favoriteMatchIds: List<String>,
     onToggleMatchFavorite: (String) -> Unit,
-    onAvatarClick: () -> Unit
+    onAvatarClick: () -> Unit,
+    onMatchClick: (String) -> Unit
 ) {
     SetStatusBarAppearance(lightIcons = true)
 
@@ -134,6 +135,7 @@ fun MatchesScreen(
                         match = match,
                         favorite = match.id in favoriteMatchIds,
                         onToggleFavorite = { onToggleMatchFavorite(match.id) },
+                        onClick = { onMatchClick(match.id) },
                         modifier = Modifier.padding(horizontal = 20.dp)
                     )
                 }

@@ -1,6 +1,7 @@
 package com.example.futview.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -58,7 +59,8 @@ import com.example.futview.ui.util.formatThousands
 fun StadiumsScreen(
     favoriteStadiumIds: List<String>,
     onToggleStadiumFavorite: (String) -> Unit,
-    onAvatarClick: () -> Unit
+    onAvatarClick: () -> Unit,
+    onStadiumClick: (String) -> Unit
 ) {
     SetStatusBarAppearance(lightIcons = true)
 
@@ -153,6 +155,7 @@ fun StadiumsScreen(
                     stadium = stadium,
                     favorite = stadium.id in favoriteStadiumIds,
                     onToggleFavorite = { onToggleStadiumFavorite(stadium.id) },
+                    onClick = { onStadiumClick(stadium.id) },
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
@@ -182,6 +185,7 @@ private fun StadiumCard(
     stadium: Stadium,
     favorite: Boolean,
     onToggleFavorite: () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -189,6 +193,7 @@ private fun StadiumCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(18.dp))
             .background(Card)
+            .clickable(onClick = onClick)
             .padding(16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {

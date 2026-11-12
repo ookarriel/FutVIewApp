@@ -46,7 +46,8 @@ import com.example.futview.ui.theme.TextSecondary
 fun ResultsScreen(
     favoriteMatchIds: List<String>,
     onToggleMatchFavorite: (String) -> Unit,
-    onAvatarClick: () -> Unit
+    onAvatarClick: () -> Unit,
+    onResultClick: (String) -> Unit
 ) {
     SetStatusBarAppearance(lightIcons = true)
 
@@ -133,6 +134,7 @@ fun ResultsScreen(
                     match = match,
                     favorite = match.id in favoriteMatchIds,
                     onToggleFavorite = { onToggleMatchFavorite(match.id) },
+                    onClick = { onResultClick(match.id) },
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }

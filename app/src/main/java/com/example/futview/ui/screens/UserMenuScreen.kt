@@ -54,7 +54,12 @@ import com.example.futview.ui.theme.TextSecondary
 fun UserMenuScreen(
     onClose: () -> Unit,
     onAdmin: () -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    onProfile: () -> Unit,
+    onSettings: () -> Unit,
+    onNotifications: () -> Unit,
+    onHelp: () -> Unit,
+    onContact: () -> Unit
 ) {
     SetStatusBarAppearance(lightIcons = false)
 
@@ -135,23 +140,23 @@ fun UserMenuScreen(
             MenuItemRow(
                 icon = Icons.Outlined.Person,
                 label = "Mi perfil",
-                onClick = {}
+                onClick = onProfile
             )
             MenuItemRow(
                 icon = Icons.Outlined.CreditCard,
                 label = "Mi cuenta",
-                onClick = {}
+                onClick = onProfile
             )
             MenuItemRow(
                 icon = Icons.Outlined.Tune,
                 label = "Configuración",
-                onClick = {}
+                onClick = onSettings
             )
             MenuItemRow(
                 icon = Icons.Outlined.Notifications,
                 label = "Notificaciones",
                 badge = "3",
-                onClick = {}
+                onClick = onNotifications
             )
             MenuItemRow(
                 icon = Icons.Outlined.AdminPanelSettings,
@@ -166,12 +171,12 @@ fun UserMenuScreen(
             MenuItemRow(
                 icon = Icons.Outlined.HelpOutline,
                 label = "Centro de ayuda",
-                onClick = {}
+                onClick = onHelp
             )
             MenuItemRow(
                 icon = Icons.Outlined.ChatBubbleOutline,
                 label = "Contactar con soporte",
-                onClick = {}
+                onClick = onContact
             )
         }
 

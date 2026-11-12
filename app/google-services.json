@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "844563509990",
+    "project_id": "futview-a23f1",
+    "storage_bucket": "futview-a23f1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:844563509990:android:c51fbf49b5b11f19438127",
+        "android_client_info": {
+          "package_name": "com.example.futview"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBWJ8oj4FprMbLcDWibCz7avr1-FqD5CU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

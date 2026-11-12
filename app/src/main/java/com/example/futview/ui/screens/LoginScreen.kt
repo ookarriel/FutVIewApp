@@ -59,7 +59,11 @@ import com.example.futview.ui.theme.TextSecondary
 import com.example.futview.ui.theme.TextTertiary
 
 @Composable
-fun LoginScreen(onLogin: () -> Unit) {
+fun LoginScreen(
+    onLogin: () -> Unit,
+    onSignUp: () -> Unit,
+    onRecover: () -> Unit
+) {
     SetStatusBarAppearance(lightIcons = false)
 
     var email by rememberSaveable { mutableStateOf("ana.garcia@correo.com") }
@@ -210,7 +214,8 @@ fun LoginScreen(onLogin: () -> Unit) {
                     text = "¿Olvidaste tu contraseña?",
                     style = MaterialTheme.typography.titleSmall,
                     color = TextPrimary,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.clickable(onClick = onRecover)
                 )
             }
 
@@ -239,7 +244,8 @@ fun LoginScreen(onLogin: () -> Unit) {
                 text = "Crea una cuenta",
                 style = MaterialTheme.typography.titleSmall,
                 color = TextPrimary,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.clickable(onClick = onSignUp)
             )
         }
 

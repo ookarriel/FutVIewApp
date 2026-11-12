@@ -13,19 +13,38 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.example.futview.data.FutViewData
+import com.example.futview.data.Match
+import com.example.futview.data.Team
 import com.example.futview.ui.components.AdminBottomBar
 import com.example.futview.ui.components.FutViewBottomBar
 import com.example.futview.ui.components.ScreenHeader
 import com.example.futview.ui.components.SetStatusBarAppearance
+import com.example.futview.ui.screens.CheckEmailScreen
+import com.example.futview.ui.screens.ConnectionErrorScreen
+import com.example.futview.ui.screens.ContactSupportScreen
 import com.example.futview.ui.screens.FavoritesScreen
+import com.example.futview.ui.screens.HelpCenterScreen
 import com.example.futview.ui.screens.LoginScreen
+import com.example.futview.ui.screens.MatchDetailScreen
 import com.example.futview.ui.screens.MatchesScreen
+import com.example.futview.ui.screens.NewPasswordScreen
+import com.example.futview.ui.screens.NotificationsScreen
+import com.example.futview.ui.screens.ProfileScreen
+import com.example.futview.ui.screens.RecoverAccessScreen
+import com.example.futview.ui.screens.ResultDetailScreen
 import com.example.futview.ui.screens.ResultsScreen
+import com.example.futview.ui.screens.SettingsScreen
+import com.example.futview.ui.screens.SignUpScreen
+import com.example.futview.ui.screens.StadiumDetailScreen
 import com.example.futview.ui.screens.StadiumsScreen
+import com.example.futview.ui.screens.TeamDetailScreen
 import com.example.futview.ui.screens.TeamsScreen
 import com.example.futview.ui.screens.UserMenuScreen
 import com.example.futview.ui.screens.admin.ActaScreen
 import com.example.futview.ui.screens.admin.ClubFormScreen
+import com.example.futview.ui.screens.admin.ConfirmDeleteScreen
+import com.example.futview.ui.screens.admin.InviteUserScreen
 import com.example.futview.ui.screens.admin.MatchFormScreen
 import com.example.futview.ui.screens.admin.StadiumFormScreen
 import com.example.futview.ui.screens.admin.UserFormScreen
@@ -34,9 +53,25 @@ import com.example.futview.ui.theme.Page
 
 private enum class Route {
     LOGIN,
+    SIGN_UP,
+    RECOVER,
+    CHECK_EMAIL,
+    NEW_PASSWORD,
     HOME,
     MENU,
-    ADMIN
+    PROFILE,
+    SETTINGS,
+    NOTIFICATIONS,
+    HELP,
+    CONTACT,
+    ADMIN,
+    INVITE_USER,
+    CONFIRM_DELETE,
+    CONNECTION_ERROR,
+    MATCH_DETAIL,
+    RESULT_DETAIL,
+    TEAM_DETAIL,
+    STADIUM_DETAIL
 }
 
 private enum class MainTab(val label: String) {
@@ -64,19 +99,87 @@ fun FutViewApp() {
     var route by rememberSaveable { mutableStateOf(Route.LOGIN) }
     var tab by rememberSaveable { mutableStateOf(MainTab.PARTIDOS) }
     var adminTab by rememberSaveable { mutableStateOf(AdminTab.EQUIPOS) }
+    var selectedMatchId by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedTeamId by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedStadiumId by rememberSaveable { mutableStateOf<String?>(null) }
 
     val favoriteTeams = remember { mutableStateListOf("cc", "uch") }
     val favoriteMatches = remember { mutableStateListOf("m2", "m6") }
     val favoriteStadiums = remember { mutableStateListOf("monumental") }
 
+    val selectMainTab: (Int) -> Unit = { index ->
+        tab = MainTab.entries[index]
+        route = Route.HOME
+    }
+    val selectAdminTab: (Int) -> Unit = { index ->
+        adminTab = AdminTab.entries[index]
+        route = Route.ADMIN
+    }
+
+    val openMatchDetail: (String) -> Unit = { id ->
+        selectedMatchId = id
+        route = Route.MATCH_DETAIL
+    }
+    val openResultDetail: (String) -> Unit = { id ->
+        selectedMatchId = id
+        route = Route.RESULT_DETAIL
+    }
+    val openTeamDetail: (String) -> Unit = { id ->
+        selectedTeamId = id
+        route = Route.TEAM_DETAIL
+    }
+    val openStadiumDetail: (String) -> Unit = { id ->
+        selectedStadiumId = id
+        route = Route.STADIUM_DETAIL
+    }
+    val openMatchStadium: (Match) -> Unit = { match ->
+        val stadium = FutViewData.stadiums.firstOrNull { it.homeTeam == match.home.name }
+        if (stadium != null) {
+            selectedStadiumId = stadium.id
+            route = Route.STADIUM_DETAIL
+        }
+    }
+    val openTeamStadium: (Team) -> Unit = { team ->
+        val stadium = FutViewData.stadiums.firstOrNull { it.name == team.stadium }
+        if (stadium != null) {
+            selectedStadiumId = stadium.id
+            route = Route.STADIUM_DETAIL
+        }
+    }
+
     BackHandler(
         enabled = route != Route.LOGIN &&
             !(route == Route.HOME && tab == MainTab.PARTIDOS)
     ) {
-        when (route) {
-            Route.HOME -> tab = MainTab.PARTIDOS
-            Route.MENU, Route.ADMIN -> route = Route.HOME
-            else -> Unit
+        route = when (route) {
+            Route.HOME -> {
+                tab = MainTab.PARTIDOS
+                route
+            }
+
+            Route.MENU -> Route.HOME
+            Route.PROFILE,
+            Route.SETTINGS,
+            Route.NOTIFICATIONS,
+            Route.HELP,
+            Route.CONTACT -> Route.MENU
+
+            Route.ADMIN -> Route.MENU
+            Route.INVITE_USER,
+            Route.CONFIRM_DELETE -> Route.ADMIN
+
+            Route.MATCH_DETAIL,
+            Route.RESULT_DETAIL,
+            Route.TEAM_DETAIL,
+            Route.STADIUM_DETAIL,
+            Route.CONNECTION_ERROR -> Route.HOME
+
+            Route.SIGN_UP,
+            Route.RECOVER,
+            Route.CHECK_EMAIL,
+            Route.NEW_PASSWORD -> Route.LOGIN
+
+            else -> route
         }
     }
 
@@ -85,7 +188,31 @@ fun FutViewApp() {
             onLogin = {
                 tab = MainTab.PARTIDOS
                 route = Route.HOME
-            }
+            },
+            onSignUp = { route = Route.SIGN_UP },
+            onRecover = { route = Route.RECOVER }
+        )
+
+        Route.SIGN_UP -> SignUpScreen(
+            onBack = { route = Route.LOGIN },
+            onLogin = { route = Route.LOGIN }
+        )
+
+        Route.RECOVER -> RecoverAccessScreen(
+            onBack = { route = Route.LOGIN },
+            onSent = { route = Route.CHECK_EMAIL }
+        )
+
+        Route.CHECK_EMAIL -> CheckEmailScreen(
+            email = "ana.garcia@correo.com",
+            onBack = { route = Route.RECOVER },
+            onResend = {},
+            onLogin = { route = Route.LOGIN }
+        )
+
+        Route.NEW_PASSWORD -> NewPasswordScreen(
+            onBack = { route = Route.SETTINGS },
+            onSaved = { route = Route.LOGIN }
         )
 
         Route.HOME -> Column(
@@ -99,25 +226,29 @@ fun FutViewApp() {
                         favoriteTeamIds = favoriteTeams,
                         favoriteMatchIds = favoriteMatches,
                         onToggleMatchFavorite = { favoriteMatches.toggle(it) },
-                        onAvatarClick = { route = Route.MENU }
+                        onAvatarClick = { route = Route.MENU },
+                        onMatchClick = openMatchDetail
                     )
 
                     MainTab.RESULTADOS -> ResultsScreen(
                         favoriteMatchIds = favoriteMatches,
                         onToggleMatchFavorite = { favoriteMatches.toggle(it) },
-                        onAvatarClick = { route = Route.MENU }
+                        onAvatarClick = { route = Route.MENU },
+                        onResultClick = openResultDetail
                     )
 
                     MainTab.EQUIPOS -> TeamsScreen(
                         favoriteTeamIds = favoriteTeams,
                         onToggleTeamFavorite = { favoriteTeams.toggle(it) },
-                        onAvatarClick = { route = Route.MENU }
+                        onAvatarClick = { route = Route.MENU },
+                        onTeamClick = openTeamDetail
                     )
 
                     MainTab.ESTADIOS -> StadiumsScreen(
                         favoriteStadiumIds = favoriteStadiums,
                         onToggleStadiumFavorite = { favoriteStadiums.toggle(it) },
-                        onAvatarClick = { route = Route.MENU }
+                        onAvatarClick = { route = Route.MENU },
+                        onStadiumClick = openStadiumDetail
                     )
 
                     MainTab.FAVORITOS -> FavoritesScreen(
@@ -127,13 +258,15 @@ fun FutViewApp() {
                         onToggleTeamFavorite = { favoriteTeams.toggle(it) },
                         onToggleMatchFavorite = { favoriteMatches.toggle(it) },
                         onToggleStadiumFavorite = { favoriteStadiums.toggle(it) },
-                        onAvatarClick = { route = Route.MENU }
+                        onAvatarClick = { route = Route.MENU },
+                        onExploreTeams = { selectMainTab(MainTab.EQUIPOS.ordinal) },
+                        onViewMatches = { selectMainTab(MainTab.PARTIDOS.ordinal) }
                     )
                 }
             }
             FutViewBottomBar(
                 selectedIndex = tab.ordinal,
-                onSelect = { tab = MainTab.entries[it] }
+                onSelect = selectMainTab
             )
         }
 
@@ -147,7 +280,48 @@ fun FutViewApp() {
                 tab = MainTab.PARTIDOS
                 adminTab = AdminTab.EQUIPOS
                 route = Route.LOGIN
-            }
+            },
+            onProfile = { route = Route.PROFILE },
+            onSettings = { route = Route.SETTINGS },
+            onNotifications = { route = Route.NOTIFICATIONS },
+            onHelp = { route = Route.HELP },
+            onContact = { route = Route.CONTACT }
+        )
+
+        Route.PROFILE -> ProfileScreen(
+            onBack = { route = Route.MENU },
+            onViewFavorites = { selectMainTab(MainTab.FAVORITOS.ordinal) },
+            onSelectTab = selectMainTab
+        )
+
+        Route.SETTINGS -> SettingsScreen(
+            onBack = { route = Route.MENU },
+            onChangePassword = { route = Route.NEW_PASSWORD },
+            onLogout = {
+                tab = MainTab.PARTIDOS
+                adminTab = AdminTab.EQUIPOS
+                route = Route.LOGIN
+            },
+            onSelectTab = selectMainTab
+        )
+
+        Route.NOTIFICATIONS -> NotificationsScreen(
+            onBack = { route = Route.MENU },
+            onViewMatch = { openMatchDetail("m2") },
+            onViewResult = { openResultDetail("m1") },
+            onExploreTeams = { selectMainTab(MainTab.EQUIPOS.ordinal) },
+            onSelectTab = selectMainTab
+        )
+
+        Route.HELP -> HelpCenterScreen(
+            onBack = { route = Route.MENU },
+            onContact = { route = Route.CONTACT },
+            onSelectTab = selectMainTab
+        )
+
+        Route.CONTACT -> ContactSupportScreen(
+            onBack = { route = Route.HELP },
+            onSelectTab = selectMainTab
         )
 
         Route.ADMIN -> {
@@ -169,17 +343,124 @@ fun FutViewApp() {
                     when (adminTab) {
                         AdminTab.EQUIPOS -> ClubFormScreen()
                         AdminTab.ESTADIOS -> StadiumFormScreen()
-                        AdminTab.FIXTURE -> MatchFormScreen()
+                        AdminTab.FIXTURE -> MatchFormScreen(
+                            onDelete = {
+                                selectedMatchId = "m2"
+                                route = Route.CONFIRM_DELETE
+                            }
+                        )
                         AdminTab.RESULTADOS -> ActaScreen()
-                        AdminTab.USUARIOS -> UserFormScreen()
+                        AdminTab.USUARIOS -> UserFormScreen(
+                            onInviteUser = { route = Route.INVITE_USER }
+                        )
                     }
                 }
 
                 AdminBottomBar(
                     selectedIndex = adminTab.ordinal,
-                    onSelect = { adminTab = AdminTab.entries[it] }
+                    onSelect = selectAdminTab
                 )
             }
         }
+
+        Route.INVITE_USER -> InviteUserScreen(
+            onBack = { route = Route.ADMIN },
+            onSelectTab = selectAdminTab
+        )
+
+        Route.CONFIRM_DELETE -> {
+            val match = FutViewData.upcomingMatches.firstOrNull { it.id == selectedMatchId }
+                ?: FutViewData.upcomingMatches.first()
+            ConfirmDeleteScreen(
+                match = match,
+                onCancel = { route = Route.ADMIN },
+                onConfirm = { route = Route.ADMIN },
+                onSelectTab = selectAdminTab
+            )
+        }
+
+        Route.MATCH_DETAIL -> {
+            val match = FutViewData.upcomingMatches.firstOrNull { it.id == selectedMatchId }
+            if (match != null) {
+                MatchDetailScreen(
+                    match = match,
+                    favorite = match.id in favoriteMatches,
+                    onToggleFavorite = { favoriteMatches.toggle(match.id) },
+                    onBack = {
+                        tab = MainTab.PARTIDOS
+                        route = Route.HOME
+                    },
+                    onViewStadium = { openMatchStadium(match) },
+                    onAvatarClick = { route = Route.MENU },
+                    onSelectTab = selectMainTab
+                )
+            }
+        }
+
+        Route.RESULT_DETAIL -> {
+            val match = FutViewData.results.firstOrNull { it.id == selectedMatchId }
+            if (match != null) {
+                ResultDetailScreen(
+                    match = match,
+                    favorite = match.id in favoriteMatches,
+                    onToggleFavorite = { favoriteMatches.toggle(match.id) },
+                    onBack = {
+                        tab = MainTab.RESULTADOS
+                        route = Route.HOME
+                    },
+                    onAvatarClick = { route = Route.MENU },
+                    onSelectTab = selectMainTab
+                )
+            }
+        }
+
+        Route.TEAM_DETAIL -> {
+            val team = FutViewData.teams.firstOrNull { it.id == selectedTeamId }
+            if (team != null) {
+                TeamDetailScreen(
+                    team = team,
+                    favorite = team.id in favoriteTeams,
+                    onToggleFavorite = { favoriteTeams.toggle(team.id) },
+                    favoriteMatchIds = favoriteMatches,
+                    onToggleMatchFavorite = { favoriteMatches.toggle(it) },
+                    onBack = {
+                        tab = MainTab.EQUIPOS
+                        route = Route.HOME
+                    },
+                    onViewStadium = { openTeamStadium(team) },
+                    onViewMatch = openMatchDetail,
+                    onViewResult = openResultDetail,
+                    onAvatarClick = { route = Route.MENU },
+                    onSelectTab = selectMainTab
+                )
+            }
+        }
+
+        Route.STADIUM_DETAIL -> {
+            val stadium = FutViewData.stadiums.firstOrNull { it.id == selectedStadiumId }
+            if (stadium != null) {
+                StadiumDetailScreen(
+                    stadium = stadium,
+                    favorite = stadium.id in favoriteStadiums,
+                    onToggleFavorite = { favoriteStadiums.toggle(stadium.id) },
+                    favoriteMatchIds = favoriteMatches,
+                    onToggleMatchFavorite = { favoriteMatches.toggle(it) },
+                    onBack = {
+                        tab = MainTab.ESTADIOS
+                        route = Route.HOME
+                    },
+                    onViewMatch = openMatchDetail,
+                    onAvatarClick = { route = Route.MENU },
+                    onSelectTab = selectMainTab
+                )
+            }
+        }
+
+        Route.CONNECTION_ERROR -> ConnectionErrorScreen(
+            onBack = { route = Route.HOME },
+            onRetry = { route = Route.HOME },
+            onOpenHelp = { route = Route.HELP },
+            onSelectTab = selectMainTab
+        )
     }
 }
