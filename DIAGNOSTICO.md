@@ -177,9 +177,10 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - [x] Pantalla de resultados ordenada del más reciente al más antiguo (fecha + hora de kickoff).
 - [x] Filtros de comuna/ciudad funcionales en Estadios y Equipos (opciones derivadas de los datos).
 - [x] Notas de sincronización, chips de estadísticas y dashboard "Estado del sistema" eliminados; código heredado de Wikipedia fuera.
-- [x] Tests básicos y README decente (Fase 5).
-- [ ] Icono de app, `applicationId` final (requiere registrar el package en Firebase) y keystore de release.
-- [ ] Build release con minify y verificación.
+- [x] Tests básicos y README decente.
+- [x] Icono de app con el escudo FutView (adaptive icon: fondo negro de marca + escudo blanco; monochrome incluido).
+- [x] Build release con minify/shrink (`assembleRelease`): APK de 119 MB → 47 MB, firmada con clave debug para instalar/compartir. DTOs de Firestore/ESPN excluidos de ofuscación (`proguard-rules.pro`).
+- [ ] `applicationId` final — **decidido: se mantiene `com.example.futview`** mientras no se publique en Play Store (el `google-services.json` está atado a ese package; cambiarlo exige actualizar Firebase y crear keystore propio).
 
 ---
 
@@ -203,3 +204,4 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 | 24-nov-2026 | **Limpieza de notas y dashboards**: eliminados `InfoNote`/`InfoPill` y todas sus apariciones (notas de sincronización, "actualiza desde el panel", chips de estadísticas), el dashboard "Estado del sistema" (`AdminStatusScreen` + ruta + ítem de menú) y el código heredado del respaldo de Wikipedia (`WikipediaSyncViewModel`, `WikipediaStandingsRepository`, botón en Acta). Textos mockup del Acta ("Simulación de la jornada 1", "Vista previa") corregidos. Build debug OK. |
 | 24-nov-2026 | **Filtro de comuna/ciudad funcional**: Estadios y Equipos ahora llenan el dropdown con las comunas/ciudades reales de los datos (antes tenía una única opción fija y nunca filtraba); si la ciudad guardada desaparece, vuelve a "Todas". Eliminado el rótulo duplicado "Sedes de la competición". Build debug OK, instalada en dispositivo sin crashes. **Fase 5 iniciada.** |
 | 24-nov-2026 | **Fase 5: tests y README**: 11 tests unitarios (`ActivityResultTest`: parseo de fechas case-insensitive —regresión del bug de agosto—, resúmenes último/próximo; `StandingsTest`: puntos/DG y orden). `README.md` reescrito. Test task `:app:testDebugUnitTest` OK. |
+| 24-nov-2026 | **Fase 5: icono y release con minify**: adaptive icon con el escudo FutView (fondo negro `#101010`, escudo blanco, monochrome incluido) generado desde el logo oficial. `assembleRelease` con R8 + shrink de recursos: APK 119 MB → **47 MB**, firmada con clave debug para instalar/compartir; reglas ProGuard mantienen los DTOs de Firestore/ESPN (serialización por reflexión). Release instalada en dispositivo: corre en primer plano, 0 crashes. `applicationId` se mantiene en `com.example.futview` mientras no se publique en Play Store. |

@@ -22,7 +22,11 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // Minify + shrink para exportar una APK liviana. Firmada con la clave debug
+            // para poder instalarla/compartirla; para Play Store habría que usar un keystore propio.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

@@ -39,6 +39,16 @@ Para correr los tests:
 
 Requiere JDK 17+ (en este proyecto se usa el JBR de Android Studio: `JAVA_HOME=/opt/android-studio/jbr`).
 
+## APK exportable (release con minify)
+
+```bash
+./gradlew :app:assembleRelease
+```
+
+Genera `app/build/outputs/apk/release/app-release.apk` (~47 MB, ofuscada con R8 y recursos reducidos), firmada con la clave debug para poder instalarla y compartirla directamente. Para Play Store habría que crear un keystore propio y, si se cambia el `applicationId`, registrar el package nuevo en Firebase.
+
+Si publicas la release, conserva `app/build/outputs/mapping/release/mapping.txt`: es la tabla para des-ofuscar stack traces de R8.
+
 ## Configuración de Firebase
 
 1. Proyecto: `futview-a23f1` (el `google-services.json` ya está en `app/`).
