@@ -21,11 +21,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.futview.data.Match
+import com.example.futview.ui.components.FirestoreErrorBanner
+import com.example.futview.ui.components.LoadingState
+import com.example.futview.ui.viewmodel.MatchesViewModel
+import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.FilterDropdownPill
 import com.example.futview.ui.components.FilterPill
@@ -53,8 +59,11 @@ fun MatchesScreen(
     var month by rememberSaveable { mutableStateOf("Febrero 2027") }
     var filter by rememberSaveable { mutableStateOf("Todos") }
 
-    // TODO Fase 3: leer los partidos desde el repositorio de Firestore.
-    val filtered = emptyList<Match>().filter { match ->
+    val viewModel: MatchesViewModel = viewModel(factory = MatchesViewModel.Factory)
+    val matchesState by viewModel.matches.collectAsStateWithLifecycle()
+
+    val allMatches = (matchesState as? UiState.Success)?.data.orEmpty()
+    val filtered = allMatches.filter { match ->
         val matchesFilter = filter != "Mis equipos" ||
             match.home.id in favoriteTeamIds ||
             match.away.id in favoriteTeamIds
@@ -82,6 +91,12 @@ fun MatchesScreen(
             contentPadding = PaddingValues(bottom = 4.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            when (matchesState) {
+                is UiState.Loading -> item(key = "state") { LoadingState() }
+                is UiState.Error -> item(key = "state") { FirestoreErrorBanner(onRetry = viewModel::retry) }
+                else -> {}
+            }
+
             item { DemoBanner() }
 
             item {
@@ -141,10 +156,14 @@ fun MatchesScreen(
                 }
             }
 
-            if (filtered.isEmpty()) {
+            if (filtered.isEmpty() && matchesState is UiState.Success) {
                 item {
                     Text(
-                        text = "No encontramos partidos con esos filtros.",
+                        text = if (allMatches.isEmpty()) {
+                            "Todavía no hay partidos programados."
+                        } else {
+                            "No encontramos partidos con esos filtros."
+                        },
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextSecondary,
                         modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)

@@ -49,6 +49,8 @@ import com.example.futview.ui.theme.TextTertiary
 @Composable
 fun TeamDetailScreen(
     team: Team,
+    nextMatch: Match?,
+    lastResult: Match?,
     favorite: Boolean,
     onToggleFavorite: () -> Unit,
     favoriteMatchIds: List<String>,
@@ -62,13 +64,7 @@ fun TeamDetailScreen(
 ) {
     SetStatusBarAppearance(lightIcons = true)
 
-    // TODO Fase 3: leer los partidos del equipo desde el repositorio de Firestore.
-    val nextMatch = emptyList<Match>().firstOrNull {
-        it.home.id == team.id || it.away.id == team.id
-    }
-    val lastResult = emptyList<Match>().firstOrNull {
-        it.home.id == team.id || it.away.id == team.id
-    }
+    // nextMatch/lastResult llegan calculados desde el repositorio (navigation/FutViewApp).
 
     Column(
         modifier = Modifier

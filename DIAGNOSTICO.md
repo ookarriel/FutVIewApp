@@ -14,7 +14,7 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - ✅ **Fase 0 completada**: los datos hardcodeados (`FutViewData`) fueron eliminados; las pantallas compilan y muestran estados vacíos hasta conectar Firestore.
 - **No hay Firebase funcional**: existe el `google-services.json` y el plugin de Gradle, pero falta agregar las dependencias y todo el código de Auth/Firestore.
 - **No hay mapas**: el SDK de Google Maps no está integrado; el botón "Abrir dirección en mapas" del detalle de estadio tiene `onClick = {}` vacío.
-- **No hay capa de datos ni arquitectura**: sin ViewModels, sin repositorios, sin Flow/Coroutines, sin inyección de dependencias.
+- ✅ **Fase 1 completada**: arquitectura base lista — repositorios con contratos, ViewModels por pantalla y estados de carga/error. La fuente de datos es temporal (listas vacías) hasta conectar Firestore en la Fase 3.
 
 ---
 
@@ -53,6 +53,13 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - ⚠️ `Stadium.latitude` y `longitude` son `String`. Para Firestore + Maps conviene usar `GeoPoint` (o `Double`).
 - ℹ️ El objeto demo `FutViewData` fue eliminado en la Fase 0; las pantallas leen de listas vacías con `// TODO Fase 3` marcando el punto de conexión al repositorio.
 
+### Arquitectura (creada en la Fase 1)
+- **`data/repository/`**: contratos `TeamRepository`, `StadiumRepository`, `MatchRepository`, `UserRepository` (exponen `Flow`). Implementaciones vacías temporales (`Empty*Repository`) hasta la Fase 3.
+- **`data/model/FirestoreDtos.kt`**: DTOs de Firestore (`TeamDoc`, `StadiumDoc` con `GeoPoint`, `MatchDoc`, `StandingDoc`, `UserDoc`) con mapeadores a los modelos de dominio.
+- **`data/AppContainer.kt`**: inyección manual; punto único para cambiar los stubs por implementaciones de Firestore.
+- **`ui/viewmodel/`**: `UiState` (Loading/Success/Error) + ViewModels de las 5 pestañas (Partidos, Resultados, Equipos, Estadios, Favoritos) y de los formularios admin (Equipos, Estadios, Usuarios, Partidos/Fixture, Acta), todos con reintento.
+- **Estados de carga/error en UI**: `LoadingState` (carga) y `FirestoreErrorBanner` (aviso pasivo de problema con la base de datos, con reintento) integrados en todas las pantallas que leen datos; `ConnectionErrorScreen` se reserva para un corte total de conexión.
+
 ### Configuración
 - ✅ `app/google-services.json` presente y con el package correcto.
 - ✅ Tema, colores y tipografías propios (`ui/theme/`).
@@ -71,7 +78,7 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - [ ] Reglas de seguridad basadas en roles (admin/editor/usuario). Roles: modelo Firestore (colección `users` con `role`) o custom claims.
 
 ### B. Cloud Firestore — ❌ No implementado
-- [ ] Dependencias: `firebase-firestore` (KTX).
+- [x] Dependencias: `firebase-firestore` (agregada en Fase 1 para el mapeo con `GeoPoint`).
 - [ ] Definir el modelo de colecciones:
   - `teams` (equipo: nombre, corto, ciudad, estadio ref, escudo/logo)
   - `stadiums` (nombre, comuna, dirección, capacidad, `location: GeoPoint`, equipo local)
@@ -96,8 +103,8 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - [ ] Permisos de ubicación solo si se agrega "distancia hasta el estadio" o estadio más cercano.
 
 ### D. Arquitectura y calidad — ❌ No implementado
-- [ ] Estructura de capas: `data/` (repos + fuentes Firestore), `domain/` (modelos, opcional), `ui/` (screens + viewmodels).
-- [ ] ViewModels con `viewModelScope` y estados UI.
+- [x] Estructura de capas: `data/repository` (contratos + stubs temporales), `data/model` (DTOs Firestore), `ui/viewmodel` (ViewModels + UiState). Creada en Fase 1.
+- [x] ViewModels con `viewModelScope` y estados UI (`UiState`: Loading/Success/Error) + aviso pasivo de error (`FirestoreErrorBanner`). Fase 1.
 - [ ] Inyección manual (o Hilt si el proyecto crece).
 - [ ] Persistir favoritos del usuario en Firestore (hoy en memoria).
 - [ ] Panel admin conectado: crear/editar/eliminar documentos reales en Firestore (hoy solo escriben en estados locales si es que eso).
@@ -124,11 +131,12 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - [x] Actualizar este documento con el avance.
 - [x] Eliminar los datos hardcodeados: borrado `FutViewData` (modelos conservados en `data/Models.kt`), pantallas con listas vacías + `TODO Fase 3`, credenciales/favoritos/notificaciones demo eliminadas, textos demo de admin neutralizados. Compilación verificada (`:app:compileDebugKotlin` OK).
 
-### Fase 1 — Arquitectura base
-- [ ] Crear estructura `data/repository`, `ui/viewmodel`.
-- [ ] Definir modelos Firestore (mapeo `Team`, `Stadium` con `GeoPoint`, `Match`, `User`).
-- [ ] ViewModels de pantallas principales leyendo desde un repositorio (aún puede devolver datos demo, pero con la forma final).
-- [ ] Estados de carga/error en UI (conectar `ConnectionErrorScreen`).
+### Fase 1 — Arquitectura base ✅ COMPLETADA
+- [x] Crear estructura `data/repository`, `ui/viewmodel` (+ `data/model`, `data/AppContainer`).
+- [x] Definir modelos Firestore (DTOs `TeamDoc`, `StadiumDoc` con `GeoPoint`, `MatchDoc`, `StandingDoc`, `UserDoc` con mapeadores a dominio).
+- [x] ViewModels de pantallas principales leyendo desde un repositorio (stubs vacíos temporales; la forma final ya está conectada).
+- [x] Estados de carga/error en UI (`UiState` + `LoadingState` en todas las pantallas con datos).
+- [x] Aviso pasivo de error de Firebase: `FirestoreErrorBanner` integrado en las 10 pantallas con datos — informa que hay un problema con la base de datos y permite reintentar sin bloquear la pantalla. `ConnectionErrorScreen` queda como pantalla completa para el caso de corte total.
 
 ### Fase 2 — Firebase Auth
 - [ ] Dependencia + login real email/contraseña.
@@ -161,3 +169,4 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 |---|---|
 | 24-nov-2026 | Diagnóstico inicial. Prototipo UI completo; Firebase configurado a nivel de proyecto pero sin código; mapas no integrados. |
 | 24-nov-2026 | **Fase 0 completada**: limpieza de `build.gradle.kts` + permiso `INTERNET` (commit `f361685`); eliminados los datos hardcodeados (`FutViewData` → `data/Models.kt`), credenciales, favoritos y notificaciones demo; pantallas quedan con estados vacíos y `TODO Fase 3` marcando la conexión al repositorio. Compilación OK. |
+| 24-nov-2026 | **Fase 1 completada**: capa de datos (`data/repository` con contratos + stubs, `data/model` con DTOs Firestore/GeoPoint, `data/AppContainer` DI manual), dependencias `firebase-firestore` + `lifecycle-viewmodel-compose` + `lifecycle-runtime-compose`, `UiState` (Loading/Success/Error) y 10 ViewModels (5 pestañas + 5 admin) con reintento; estados de carga e integrado el aviso pasivo de error de Firebase (`FirestoreErrorBanner`) en todas las pantallas con datos. Compilación OK. |

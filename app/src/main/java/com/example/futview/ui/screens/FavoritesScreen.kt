@@ -30,6 +30,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +41,11 @@ import androidx.compose.ui.unit.dp
 import com.example.futview.data.Match
 import com.example.futview.data.Stadium
 import com.example.futview.data.Team
+import com.example.futview.ui.components.FirestoreErrorBanner
+import com.example.futview.ui.components.LoadingState
+import com.example.futview.ui.viewmodel.FavoritesUiData
+import com.example.futview.ui.viewmodel.FavoritesViewModel
+import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.Crest
 import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.EmptyState
@@ -75,12 +82,15 @@ fun FavoritesScreen(
     var query by rememberSaveable { mutableStateOf("") }
     var type by rememberSaveable { mutableStateOf("Todos") }
 
-    // TODO Fase 3: leer favoritos desde el repositorio de Firestore.
-    val teams = emptyList<Team>().filter { it.id in favoriteTeamIds }
-    val matches = emptyList<Match>()
+    val viewModel: FavoritesViewModel = viewModel(factory = FavoritesViewModel.Factory)
+    val favoritesState by viewModel.favorites.collectAsStateWithLifecycle()
+    val data = (favoritesState as? UiState.Success)?.data ?: FavoritesUiData()
+
+    val teams = data.teams.filter { it.id in favoriteTeamIds }
+    val matches = data.matches
         .filter { it.id in favoriteMatchIds }
         .sortedWith(compareBy({ it.matchday }, { it.time }))
-    val stadiums = emptyList<Stadium>().filter { it.id in favoriteStadiumIds }
+    val stadiums = data.stadiums.filter { it.id in favoriteStadiumIds }
 
     val visibleTeams = if (type == "Todos" || type == "Equipos") {
         teams.filter {
@@ -130,6 +140,12 @@ fun FavoritesScreen(
             contentPadding = PaddingValues(bottom = 4.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            when (favoritesState) {
+                is UiState.Loading -> item(key = "state") { LoadingState() }
+                is UiState.Error -> item(key = "state") { FirestoreErrorBanner(onRetry = viewModel::retry) }
+                else -> {}
+            }
+
             item { DemoBanner() }
 
             item {
@@ -191,7 +207,7 @@ fun FavoritesScreen(
                     Spacer(Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "La selección de Ana",
+                            text = "Mi selección",
                             style = MaterialTheme.typography.titleSmall,
                             color = TextPrimary,
                             fontWeight = FontWeight.SemiBold
@@ -266,7 +282,7 @@ fun FavoritesScreen(
                 }
             }
 
-            if (total == 0) {
+            if (total == 0 && favoritesState is UiState.Success) {
                 item {
                     EmptyState(
                         icon = Icons.Outlined.StarBorder,
@@ -279,7 +295,7 @@ fun FavoritesScreen(
                         modifier = Modifier.padding(horizontal = 20.dp)
                     )
                 }
-            } else if (visibleTeams.isEmpty() && visibleMatches.isEmpty() && visibleStadiums.isEmpty()) {
+            } else if (favoritesState is UiState.Success && visibleTeams.isEmpty() && visibleMatches.isEmpty() && visibleStadiums.isEmpty()) {
                 item {
                     Text(
                         text = "No encontramos favoritos con esos filtros. Toca una estrella para guardar equipos, partidos o estadios.",

@@ -31,6 +31,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +42,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.futview.data.FixtureDay
 import com.example.futview.data.Match
+import com.example.futview.ui.components.FirestoreErrorBanner
+import com.example.futview.ui.components.LoadingState
+import com.example.futview.ui.viewmodel.MatchFormViewModel
+import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.AdminFormActions
 import com.example.futview.ui.components.AdminSectionHeader
 import com.example.futview.ui.components.DemoBanner
@@ -67,6 +73,14 @@ fun MatchFormScreen(
     var stadium by rememberSaveable { mutableStateOf("") }
     var homeTeam by rememberSaveable { mutableStateOf("") }
     var awayTeam by rememberSaveable { mutableStateOf("") }
+
+    val viewModel: MatchFormViewModel = viewModel(factory = MatchFormViewModel.Factory)
+    val teamsState by viewModel.teams.collectAsStateWithLifecycle()
+    val stadiumsState by viewModel.stadiums.collectAsStateWithLifecycle()
+    val fixtureState by viewModel.fixtureDays.collectAsStateWithLifecycle()
+    val teams = (teamsState as? UiState.Success)?.data.orEmpty()
+    val stadiums = (stadiumsState as? UiState.Success)?.data.orEmpty()
+    val fixtureDays = (fixtureState as? UiState.Success)?.data.orEmpty()
 
     Column(
         modifier = Modifier
@@ -130,8 +144,7 @@ fun MatchFormScreen(
                     Spacer(Modifier.height(8.dp))
                     FormDropdown(
                         value = stadium,
-                        // TODO Fase 3: opciones desde el repositorio de Firestore.
-                        options = emptyList(),
+                        options = stadiums.map { it.name },
                         onSelect = { stadium = it }
                     )
 
@@ -141,7 +154,7 @@ fun MatchFormScreen(
                     Spacer(Modifier.height(8.dp))
                     FormDropdown(
                         value = homeTeam,
-                        options = emptyList(),
+                        options = teams.map { it.name },
                         onSelect = { homeTeam = it }
                     )
 
@@ -151,7 +164,7 @@ fun MatchFormScreen(
                     Spacer(Modifier.height(8.dp))
                     FormDropdown(
                         value = awayTeam,
-                        options = emptyList(),
+                        options = teams.map { it.name },
                         onSelect = { awayTeam = it }
                     )
 
@@ -189,12 +202,18 @@ fun MatchFormScreen(
             item {
                 AdminSectionHeader(
                     title = "Fixture cronológico",
-                    subtitle = "Calendario de ejemplo · Febrero de 2027",
-                    trailing = "4 partidos"
+                    subtitle = "Próximas jornadas del campeonato",
+                    trailing = "${fixtureDays.size} partidos"
                 )
             }
 
-            items(emptyList<FixtureDay>(), key = { it.dateLabel }) { day ->
+            when (fixtureState) {
+                is UiState.Loading -> item(key = "fixture-state") { LoadingState() }
+                is UiState.Error -> item(key = "fixture-state") { FirestoreErrorBanner(onRetry = viewModel::retry) }
+                else -> {}
+            }
+
+            items(fixtureDays, key = { it.dateLabel }) { day ->
                 FixtureDayCard(
                     day = day,
                     modifier = Modifier.padding(horizontal = 20.dp)

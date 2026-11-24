@@ -49,6 +49,7 @@ import com.example.futview.ui.util.formatThousands
 @Composable
 fun StadiumDetailScreen(
     stadium: Stadium,
+    nextMatch: Match?,
     favorite: Boolean,
     onToggleFavorite: () -> Unit,
     favoriteMatchIds: List<String>,
@@ -60,10 +61,7 @@ fun StadiumDetailScreen(
 ) {
     SetStatusBarAppearance(lightIcons = true)
 
-    // TODO Fase 3: leer los partidos del estadio desde el repositorio de Firestore.
-    val nextMatch = emptyList<Match>().firstOrNull {
-        it.stadium.startsWith(stadium.name)
-    }
+    // nextMatch llega calculado desde el repositorio (navigation/FutViewApp).
 
     Column(
         modifier = Modifier

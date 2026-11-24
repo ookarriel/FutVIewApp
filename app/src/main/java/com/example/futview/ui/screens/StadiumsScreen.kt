@@ -31,6 +31,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +40,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.futview.data.Stadium
+import com.example.futview.ui.components.FirestoreErrorBanner
+import com.example.futview.ui.components.LoadingState
+import com.example.futview.ui.viewmodel.StadiumsViewModel
+import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.FilterDropdownPill
 import com.example.futview.ui.components.FilterPill
@@ -67,8 +73,10 @@ fun StadiumsScreen(
     var filter by rememberSaveable { mutableStateOf("Todas") }
     var city by rememberSaveable { mutableStateOf("Todas las comunas") }
 
-    // TODO Fase 3: leer los estadios desde el repositorio de Firestore.
-    val filtered = emptyList<Stadium>().filter { stadium ->
+    val viewModel: StadiumsViewModel = viewModel(factory = StadiumsViewModel.Factory)
+    val stadiumsState by viewModel.stadiums.collectAsStateWithLifecycle()
+
+    val filtered = (stadiumsState as? UiState.Success)?.data.orEmpty().filter { stadium ->
         val matchesFilter = filter != "Mis estadios" || stadium.id in favoriteStadiumIds
         val matchesCity = city == "Todas las comunas" || stadium.city == city
         val matchesQuery = query.isBlank() ||
@@ -93,6 +101,12 @@ fun StadiumsScreen(
             contentPadding = PaddingValues(bottom = 4.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            when (stadiumsState) {
+                is UiState.Loading -> item(key = "state") { LoadingState() }
+                is UiState.Error -> item(key = "state") { FirestoreErrorBanner(onRetry = viewModel::retry) }
+                else -> {}
+            }
+
             item { DemoBanner() }
 
             item {
@@ -154,7 +168,7 @@ fun StadiumsScreen(
                 )
             }
 
-            if (filtered.isEmpty()) {
+            if (filtered.isEmpty() && stadiumsState is UiState.Success) {
                 item {
                     Text(
                         text = "No encontramos estadios con esos filtros.",

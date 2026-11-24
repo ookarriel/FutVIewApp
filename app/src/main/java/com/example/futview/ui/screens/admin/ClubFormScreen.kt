@@ -31,6 +31,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +40,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.futview.data.Team
+import com.example.futview.ui.components.FirestoreErrorBanner
+import com.example.futview.ui.components.LoadingState
+import com.example.futview.ui.viewmodel.ClubFormViewModel
+import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.AdminFormActions
 import com.example.futview.ui.components.AdminSectionHeader
 import com.example.futview.ui.components.Crest
@@ -59,6 +65,10 @@ fun ClubFormScreen() {
 
     var name by rememberSaveable { mutableStateOf("") }
     var city by rememberSaveable { mutableStateOf("") }
+
+    val viewModel: ClubFormViewModel = viewModel(factory = ClubFormViewModel.Factory)
+    val teamsState by viewModel.teams.collectAsStateWithLifecycle()
+    val teams = (teamsState as? UiState.Success)?.data.orEmpty()
 
     Column(
         modifier = Modifier
@@ -218,8 +228,19 @@ fun ClubFormScreen() {
                             color = TextSecondary
                         )
                     }
-                    // TODO Fase 3: leer los clubes desde el repositorio de Firestore.
-                    val teams = emptyList<Team>()
+                    when (val s = teamsState) {
+                        is UiState.Loading -> LoadingState()
+                        is UiState.Error -> FirestoreErrorBanner(onRetry = viewModel::retry)
+                        is UiState.Success ->
+                            if (s.data.isEmpty()) {
+                                Text(
+                                    text = "No hay clubes registrados todavía.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = TextSecondary,
+                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 16.dp)
+                                )
+                            }
+                    }
                     teams.forEachIndexed { index, team ->
                         Row(
                             modifier = Modifier

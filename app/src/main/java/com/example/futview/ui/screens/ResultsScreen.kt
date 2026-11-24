@@ -23,12 +23,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.futview.data.Match
 import com.example.futview.data.StandingRow
+import com.example.futview.ui.components.FirestoreErrorBanner
+import com.example.futview.ui.components.LoadingState
+import com.example.futview.ui.viewmodel.ResultsViewModel
+import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.FilterDropdownPill
 import com.example.futview.ui.components.FutViewSearchField
@@ -56,8 +62,12 @@ fun ResultsScreen(
     var season by rememberSaveable { mutableStateOf("Temporada 2027") }
     var matchday by rememberSaveable { mutableStateOf("Jornada 1") }
 
-    // TODO Fase 3: leer resultados y tabla desde el repositorio de Firestore.
-    val allResults = emptyList<Match>()
+    val viewModel: ResultsViewModel = viewModel(factory = ResultsViewModel.Factory)
+    val resultsState by viewModel.results.collectAsStateWithLifecycle()
+    val standingsState by viewModel.standings.collectAsStateWithLifecycle()
+
+    val allResults = (resultsState as? UiState.Success)?.data.orEmpty()
+    val standings = (standingsState as? UiState.Success)?.data.orEmpty()
     val filtered = allResults.filter { match ->
         query.isBlank() ||
             match.home.name.contains(query, ignoreCase = true) ||
@@ -80,6 +90,12 @@ fun ResultsScreen(
             contentPadding = PaddingValues(bottom = 4.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            when (resultsState) {
+                is UiState.Loading -> item(key = "state") { LoadingState() }
+                is UiState.Error -> item(key = "state") { FirestoreErrorBanner(onRetry = viewModel::retry) }
+                else -> {}
+            }
+
             item { DemoBanner() }
 
             item {
@@ -142,7 +158,7 @@ fun ResultsScreen(
                 )
             }
 
-            if (filtered.isEmpty()) {
+            if (filtered.isEmpty() && resultsState is UiState.Success) {
                 item {
                     Text(
                         text = "No encontramos resultados para esa búsqueda.",
@@ -168,7 +184,7 @@ fun ResultsScreen(
 
             item {
                 StandingsTable(
-                    rows = emptyList<StandingRow>(),
+                    rows = standings,
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }

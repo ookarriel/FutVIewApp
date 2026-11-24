@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.AccountBalance
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
@@ -48,6 +49,7 @@ import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -1605,6 +1607,77 @@ fun EmptyState(
         if (secondaryText != null && onSecondary != null) {
             Spacer(Modifier.height(10.dp))
             OutlineButton(text = secondaryText, onClick = onSecondary)
+        }
+    }
+}
+
+/** Indicador de carga centrado, para listas y secciones que esperan datos del repositorio. */
+@Composable
+fun LoadingState(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+/** Tarjeta de error con reintento, consistente con ConnectionErrorScreen. */
+@Composable
+fun ErrorState(
+    modifier: Modifier = Modifier,
+    message: String = "Comprueba tu conexión a internet y vuelve a intentarlo.",
+    onRetry: () -> Unit
+) {
+    EmptyState(
+        icon = Icons.Outlined.CloudOff,
+        title = "No pudimos conectar",
+        message = message,
+        primaryText = "Volver a intentar",
+        onPrimary = onRetry,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 24.dp)
+    )
+}
+
+/** Aviso pasivo de problema con la base de datos (Firestore): no bloquea la pantalla. */
+@Composable
+fun FirestoreErrorBanner(
+    modifier: Modifier = Modifier,
+    onRetry: (() -> Unit)? = null
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Field)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.CloudOff,
+            contentDescription = null,
+            tint = TextSecondary,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(Modifier.width(10.dp))
+        Text(
+            text = "Hay un problema con la base de datos. Estamos intentando reconectar.",
+            style = MaterialTheme.typography.bodySmall,
+            color = TextSecondary,
+            modifier = Modifier.weight(1f)
+        )
+        if (onRetry != null) {
+            Text(
+                text = "Reintentar",
+                style = MaterialTheme.typography.labelLarge,
+                color = TextPrimary,
+                modifier = Modifier.clickable(onClick = onRetry)
+            )
         }
     }
 }

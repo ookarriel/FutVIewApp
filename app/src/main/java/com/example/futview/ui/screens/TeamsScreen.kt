@@ -30,6 +30,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,6 +39,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.futview.data.Team
+import com.example.futview.ui.components.FirestoreErrorBanner
+import com.example.futview.ui.components.LoadingState
+import com.example.futview.ui.viewmodel.TeamsViewModel
+import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.Crest
 import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.EmptyState
@@ -68,8 +74,10 @@ fun TeamsScreen(
     var filter by rememberSaveable { mutableStateOf("Todos") }
     var city by rememberSaveable { mutableStateOf("Todas las ciudades") }
 
-    // TODO Fase 3: leer los equipos desde el repositorio de Firestore.
-    val filtered = emptyList<Team>().filter { team ->
+    val viewModel: TeamsViewModel = viewModel(factory = TeamsViewModel.Factory)
+    val teamsState by viewModel.teams.collectAsStateWithLifecycle()
+
+    val filtered = (teamsState as? UiState.Success)?.data.orEmpty().filter { team ->
         val matchesFilter = filter != "Mis equipos" || team.id in favoriteTeamIds
         val matchesCity = city == "Todas las ciudades" || team.city == city
         val matchesQuery = query.isBlank() ||
@@ -94,6 +102,12 @@ fun TeamsScreen(
             contentPadding = PaddingValues(bottom = 4.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            when (teamsState) {
+                is UiState.Loading -> item(key = "state") { LoadingState() }
+                is UiState.Error -> item(key = "state") { FirestoreErrorBanner(onRetry = viewModel::retry) }
+                else -> {}
+            }
+
             item { DemoBanner() }
 
             item {
@@ -157,7 +171,7 @@ fun TeamsScreen(
                 )
             }
 
-            if (filtered.isEmpty()) {
+            if (filtered.isEmpty() && teamsState is UiState.Success) {
                 item {
                     EmptyState(
                         icon = Icons.Outlined.SearchOff,

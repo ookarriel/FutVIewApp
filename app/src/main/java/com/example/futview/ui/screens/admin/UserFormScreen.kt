@@ -34,6 +34,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +46,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.futview.data.SystemUser
+import com.example.futview.ui.components.FirestoreErrorBanner
+import com.example.futview.ui.components.LoadingState
+import com.example.futview.ui.viewmodel.UiState
+import com.example.futview.ui.viewmodel.UserFormViewModel
 import com.example.futview.ui.components.AdminFormActions
 import com.example.futview.ui.components.AdminSectionHeader
 import com.example.futview.ui.components.Avatar
@@ -72,6 +78,10 @@ fun UserFormScreen(
     var name by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
+
+    val viewModel: UserFormViewModel = viewModel(factory = UserFormViewModel.Factory)
+    val usersState by viewModel.users.collectAsStateWithLifecycle()
+    val users = (usersState as? UiState.Success)?.data.orEmpty()
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     var roleIndex by rememberSaveable { mutableStateOf(0) }
 
@@ -244,8 +254,19 @@ fun UserFormScreen(
                             color = TextSecondary
                         )
                     }
-                    // TODO Fase 3: leer los usuarios desde el repositorio de Firestore.
-                    val users = emptyList<SystemUser>()
+                    when (val s = usersState) {
+                        is UiState.Loading -> LoadingState()
+                        is UiState.Error -> FirestoreErrorBanner(onRetry = viewModel::retry)
+                        is UiState.Success ->
+                            if (s.data.isEmpty()) {
+                                Text(
+                                    text = "No hay usuarios registrados todavía.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = TextSecondary,
+                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 16.dp)
+                                )
+                            }
+                    }
                     users.forEachIndexed { index, user ->
                         Row(
                             modifier = Modifier

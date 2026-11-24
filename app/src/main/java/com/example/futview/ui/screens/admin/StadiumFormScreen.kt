@@ -31,6 +31,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +41,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.futview.data.Stadium
+import com.example.futview.ui.components.FirestoreErrorBanner
+import com.example.futview.ui.components.LoadingState
+import com.example.futview.ui.viewmodel.StadiumFormViewModel
+import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.AdminFormActions
 import com.example.futview.ui.components.AdminSectionHeader
 import com.example.futview.ui.components.DemoBanner
@@ -63,6 +69,10 @@ fun StadiumFormScreen() {
     var capacity by rememberSaveable { mutableStateOf("") }
     var latitude by rememberSaveable { mutableStateOf("") }
     var longitude by rememberSaveable { mutableStateOf("") }
+
+    val viewModel: StadiumFormViewModel = viewModel(factory = StadiumFormViewModel.Factory)
+    val stadiumsState by viewModel.stadiums.collectAsStateWithLifecycle()
+    val stadiums = (stadiumsState as? UiState.Success)?.data.orEmpty()
     var enabled by rememberSaveable { mutableStateOf(true) }
 
     Column(
@@ -255,8 +265,19 @@ fun StadiumFormScreen() {
                             color = TextSecondary
                         )
                     }
-                    // TODO Fase 3: leer los estadios desde el repositorio de Firestore.
-                    val stadiums = emptyList<Stadium>()
+                    when (val s = stadiumsState) {
+                        is UiState.Loading -> LoadingState()
+                        is UiState.Error -> FirestoreErrorBanner(onRetry = viewModel::retry)
+                        is UiState.Success ->
+                            if (s.data.isEmpty()) {
+                                Text(
+                                    text = "No hay estadios registrados todavía.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = TextSecondary,
+                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 16.dp)
+                                )
+                            }
+                    }
                     stadiums.forEachIndexed { index, stadium ->
                         Row(
                             modifier = Modifier

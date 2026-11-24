@@ -29,6 +29,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,6 +41,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.futview.data.StandingRow
 import com.example.futview.data.Team
+import com.example.futview.ui.components.FirestoreErrorBanner
+import com.example.futview.ui.components.LoadingState
+import com.example.futview.ui.viewmodel.ActaViewModel
+import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.AdminSectionHeader
 import com.example.futview.ui.components.Crest
 import com.example.futview.ui.components.DemoBanner
@@ -60,15 +66,23 @@ import com.example.futview.ui.theme.TextSecondary
 fun ActaScreen() {
     val context = LocalContext.current
 
-    var selectedMatch by rememberSaveable { mutableStateOf("") }
+    var selectedMatchId by rememberSaveable { mutableStateOf<String?>(null) }
     var homeGoals by rememberSaveable { mutableStateOf("") }
     var awayGoals by rememberSaveable { mutableStateOf("") }
     var statusIndex by rememberSaveable { mutableStateOf(2) }
 
-    // TODO Fase 3: tomar los equipos y la tabla desde el repositorio de Firestore.
-    val home = Team(id = "", name = "", short = "", city = "", stadium = "", lastResult = "", nextMatch = "")
-    val away = home
-    val standings = emptyList<StandingRow>()
+    val viewModel: ActaViewModel = viewModel(factory = ActaViewModel.Factory)
+    val matchesState by viewModel.matches.collectAsStateWithLifecycle()
+    val standingsState by viewModel.standings.collectAsStateWithLifecycle()
+
+    // TODO Fase 3: guardar el acta en Firestore al confirmar.
+    val matches = (matchesState as? UiState.Success)?.data.orEmpty()
+    val standings = (standingsState as? UiState.Success)?.data.orEmpty()
+    val matchLabels = matches.associate { it.id to "${it.home.name} vs. ${it.away.name}" }
+    val selectedMatch = matches.firstOrNull { it.id == selectedMatchId }
+    val blankTeam = Team(id = "", name = "", short = "", city = "", stadium = "", lastResult = "", nextMatch = "")
+    val home = selectedMatch?.home ?: blankTeam
+    val away = selectedMatch?.away ?: blankTeam
 
     Column(
         modifier = Modifier
@@ -92,9 +106,11 @@ fun ActaScreen() {
                     FormLabel("Seleccionar Partido de Primera División")
                     Spacer(Modifier.height(8.dp))
                     FormDropdown(
-                        value = selectedMatch,
-                        options = emptyList(),
-                        onSelect = { selectedMatch = it }
+                        value = matchLabels[selectedMatchId] ?: "",
+                        options = matchLabels.values.toList(),
+                        onSelect = { label ->
+                            selectedMatchId = matchLabels.entries.firstOrNull { it.value == label }?.key
+                        }
                     )
 
                     Spacer(Modifier.height(14.dp))
@@ -108,7 +124,7 @@ fun ActaScreen() {
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            text = "",
+                            text = selectedMatch?.let { "${it.shortDate} · ${it.time} · ${it.stadium}" } ?: "",
                             style = MaterialTheme.typography.bodySmall,
                             color = TextSecondary
                         )
@@ -170,6 +186,12 @@ fun ActaScreen() {
                         }
                     )
                 }
+            }
+
+            when (standingsState) {
+                is UiState.Loading -> item(key = "standings-state") { LoadingState() }
+                is UiState.Error -> item(key = "standings-state") { FirestoreErrorBanner(onRetry = viewModel::retry) }
+                else -> {}
             }
 
             item {

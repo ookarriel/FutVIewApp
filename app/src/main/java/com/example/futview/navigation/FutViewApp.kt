@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -13,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.example.futview.data.AppContainer
 import com.example.futview.data.Match
 import com.example.futview.data.Stadium
 import com.example.futview.data.Team
@@ -103,6 +105,13 @@ fun FutViewApp() {
     var selectedTeamId by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedStadiumId by rememberSaveable { mutableStateOf<String?>(null) }
 
+    // Datos del repositorio para las rutas de detalle y las búsquedas de estadio.
+    // Fase 3: las pantallas de detalle cargarán por id con sus propios ViewModels.
+    val teams by AppContainer.teamRepository.observeTeams().collectAsState(initial = emptyList())
+    val stadiums by AppContainer.stadiumRepository.observeStadiums().collectAsState(initial = emptyList())
+    val upcomingMatches by AppContainer.matchRepository.observeUpcomingMatches().collectAsState(initial = emptyList())
+    val results by AppContainer.matchRepository.observeResults().collectAsState(initial = emptyList())
+
     val favoriteTeams = remember { mutableStateListOf<String>() }
     val favoriteMatches = remember { mutableStateListOf<String>() }
     val favoriteStadiums = remember { mutableStateListOf<String>() }
@@ -133,16 +142,14 @@ fun FutViewApp() {
         route = Route.STADIUM_DETAIL
     }
     val openMatchStadium: (Match) -> Unit = { match ->
-        // TODO Fase 3: buscar el estadio desde el repositorio de Firestore.
-        val stadium = emptyList<Stadium>().firstOrNull { it.homeTeam == match.home.name }
+        val stadium = stadiums.firstOrNull { it.homeTeam == match.home.name }
         if (stadium != null) {
             selectedStadiumId = stadium.id
             route = Route.STADIUM_DETAIL
         }
     }
     val openTeamStadium: (Team) -> Unit = { team ->
-        // TODO Fase 3: buscar el estadio desde el repositorio de Firestore.
-        val stadium = emptyList<Stadium>().firstOrNull { it.name == team.stadium }
+        val stadium = stadiums.firstOrNull { it.name == team.stadium }
         if (stadium != null) {
             selectedStadiumId = stadium.id
             route = Route.STADIUM_DETAIL
@@ -369,7 +376,7 @@ fun FutViewApp() {
 
         Route.CONFIRM_DELETE -> {
             val match = selectedMatchId?.let { id ->
-                emptyList<Match>().firstOrNull { it.id == id }
+                upcomingMatches.firstOrNull { it.id == id }
             }
             if (match != null) {
                 ConfirmDeleteScreen(
@@ -382,7 +389,7 @@ fun FutViewApp() {
         }
 
         Route.MATCH_DETAIL -> {
-            val match = emptyList<Match>().firstOrNull { it.id == selectedMatchId }
+            val match = upcomingMatches.firstOrNull { it.id == selectedMatchId }
             if (match != null) {
                 MatchDetailScreen(
                     match = match,
@@ -400,7 +407,7 @@ fun FutViewApp() {
         }
 
         Route.RESULT_DETAIL -> {
-            val match = emptyList<Match>().firstOrNull { it.id == selectedMatchId }
+            val match = results.firstOrNull { it.id == selectedMatchId }
             if (match != null) {
                 ResultDetailScreen(
                     match = match,
@@ -417,10 +424,16 @@ fun FutViewApp() {
         }
 
         Route.TEAM_DETAIL -> {
-            val team = emptyList<Team>().firstOrNull { it.id == selectedTeamId }
+            val team = teams.firstOrNull { it.id == selectedTeamId }
             if (team != null) {
                 TeamDetailScreen(
                     team = team,
+                    nextMatch = upcomingMatches.firstOrNull {
+                        it.home.id == team.id || it.away.id == team.id
+                    },
+                    lastResult = results.firstOrNull {
+                        it.home.id == team.id || it.away.id == team.id
+                    },
                     favorite = team.id in favoriteTeams,
                     onToggleFavorite = { favoriteTeams.toggle(team.id) },
                     favoriteMatchIds = favoriteMatches,
@@ -439,10 +452,13 @@ fun FutViewApp() {
         }
 
         Route.STADIUM_DETAIL -> {
-            val stadium = emptyList<Stadium>().firstOrNull { it.id == selectedStadiumId }
+            val stadium = stadiums.firstOrNull { it.id == selectedStadiumId }
             if (stadium != null) {
                 StadiumDetailScreen(
                     stadium = stadium,
+                    nextMatch = upcomingMatches.firstOrNull {
+                        it.stadium.startsWith(stadium.name)
+                    },
                     favorite = stadium.id in favoriteStadiums,
                     onToggleFavorite = { favoriteStadiums.toggle(stadium.id) },
                     favoriteMatchIds = favoriteMatches,
