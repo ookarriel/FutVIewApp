@@ -118,7 +118,7 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 ### E. Deudas y detalles detectados (menores pero concretos)
 1. ✅ ~~`app/build.gradle.kts` línea 45: `8` suelto con espacios basura~~ — eliminado en Fase 0 (commit `f361685`).
 2. ✅ ~~El manifest no declara `INTERNET`~~ — agregado en Fase 0 (commit `f361685`).
-3. ⚠️ `README.md` está casi vacío y con typo ("FutVIewApp").
+3. ✅ ~~`README.md` está casi vacío y con typo ("FutVIewApp")~~ — reescrito en Fase 5.
 4. ⚠️ `applicationId` con namespace `com.example.*` — cambiar para publicación.
 5. ⚠️ Navegación con enums y estado en `rememberSaveable`: no sobrevive a cambios de configuración complejos ni soporta deep links; migrar a Navigation Compose cuando se conecte la lógica.
 6. ✅ ~~Datos de ejemplo con fechas de 2027 y solo 4 equipos~~ — dataset demo eliminado en Fase 0; al conectar Firestore se define el dataset real (primera división chilena completa).
@@ -202,3 +202,4 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 | 24-nov-2026 | **Resultados: orden y paginación**: corregido el parseo de `dayLabel` (era case-sensitive y toda fecha caía a `MIN`, ordenando como si fuera agosto); la lista ahora ordena de verdad por fecha+hora descendente. Paginado de 5 en 5 con botón "Ver más" y encabezado de fecha por grupo; la tabla de posiciones queda a pocos scrolls del inicio. Build debug OK, instalada en dispositivo sin crashes. |
 | 24-nov-2026 | **Limpieza de notas y dashboards**: eliminados `InfoNote`/`InfoPill` y todas sus apariciones (notas de sincronización, "actualiza desde el panel", chips de estadísticas), el dashboard "Estado del sistema" (`AdminStatusScreen` + ruta + ítem de menú) y el código heredado del respaldo de Wikipedia (`WikipediaSyncViewModel`, `WikipediaStandingsRepository`, botón en Acta). Textos mockup del Acta ("Simulación de la jornada 1", "Vista previa") corregidos. Build debug OK. |
 | 24-nov-2026 | **Filtro de comuna/ciudad funcional**: Estadios y Equipos ahora llenan el dropdown con las comunas/ciudades reales de los datos (antes tenía una única opción fija y nunca filtraba); si la ciudad guardada desaparece, vuelve a "Todas". Eliminado el rótulo duplicado "Sedes de la competición". Build debug OK, instalada en dispositivo sin crashes. **Fase 5 iniciada.** |
+| 24-nov-2026 | **Fase 5: tests y README**: 11 tests unitarios (`ActivityResultTest`: parseo de fechas case-insensitive —regresión del bug de agosto—, resúmenes último/próximo; `StandingsTest`: puntos/DG y orden). `README.md` reescrito. Test task `:app:testDebugUnitTest` OK. |
