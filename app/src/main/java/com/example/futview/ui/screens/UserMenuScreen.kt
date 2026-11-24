@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.CreditCard
 import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Notifications
@@ -58,6 +59,7 @@ fun UserMenuScreen(
     userName: String = "",
     userEmail: String = "",
     onAdmin: () -> Unit,
+    onStatus: () -> Unit = {},
     onLogout: () -> Unit,
     onProfile: () -> Unit,
     onSettings: () -> Unit,
@@ -167,6 +169,11 @@ fun UserMenuScreen(
                     icon = Icons.Outlined.AdminPanelSettings,
                     label = "Administración",
                     onClick = onAdmin
+                )
+                MenuItemRow(
+                    icon = Icons.Outlined.Info,
+                    label = "Estado del sistema",
+                    onClick = onStatus
                 )
             }
         }

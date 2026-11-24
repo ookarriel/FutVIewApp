@@ -41,16 +41,12 @@ class ApiFootballSyncRepository {
 
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val lastSync = prefs.getLong(KEY_LAST_SYNC, 0L)
-        if (!force && System.currentTimeMillis() - lastSync < DAY_MILLIS) {
-            return Result.success("Sincronización al día (se actualiza cada 24 horas).")
+        if (!force && System.currentTimeMillis() - lastSync < SIX_HOURS_MILLIS) {
+            return Result.success("Sincronización al día (se actualiza 4 veces al día).")
         }
 
         return try {
-            val service = Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-                .create(ApiFootballService::class.java)
+            val service = buildService(context)
 
             val response = service.fixtures(LEAGUE_ID, SEASON, key)
             val batch = db.batch()
@@ -143,12 +139,33 @@ class ApiFootballSyncRepository {
         return zoned.format(DateTimeFormatter.ofPattern("HH:mm"))
     }
 
+    /** Cliente con interceptor que registra la cuota de la API (headers de API-Football). */
+    private fun buildService(context: Context): ApiFootballService {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val client = okhttp3.OkHttpClient.Builder().addInterceptor { chain ->
+            val response = chain.proceed(chain.request())
+            prefs.edit()
+                .putInt(KEY_USAGE_REMAINING, response.header("x-ratelimit-requests-remaining")?.toIntOrNull() ?: -1)
+                .putInt(KEY_USAGE_LIMIT, response.header("x-ratelimit-requests-limit")?.toIntOrNull() ?: -1)
+                .apply()
+            response
+        }.build()
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ApiFootballService::class.java)
+    }
+
     companion object {
         private const val BASE_URL = "https://v3.football.api-sports.io/"
         private const val LEAGUE_ID = 265        // Liga de Primera de Chile
         private const val SEASON = 2026
         private const val PREFS_NAME = "futview_sync"
         private const val KEY_LAST_SYNC = "last_sync_api_football"
-        private const val DAY_MILLIS = 24L * 60L * 60L * 1000L
+        private const val KEY_USAGE_REMAINING = "usage_remaining"
+        private const val KEY_USAGE_LIMIT = "usage_limit"
+        private const val SIX_HOURS_MILLIS = 6L * 60L * 60L * 1000L  // 4 veces al día
     }
 }

@@ -86,6 +86,7 @@ private enum class Route {
     INVITE_USER,
     CONFIRM_DELETE,
     CONNECTION_ERROR,
+    ADMIN_STATUS,
     MATCH_DETAIL,
     RESULT_DETAIL,
     TEAM_DETAIL,
@@ -381,6 +382,7 @@ fun FutViewApp() {
                 adminTab = AdminTab.EQUIPOS
                 route = Route.LOGIN
             },
+            onStatus = { route = Route.ADMIN_STATUS },
             onProfile = { route = Route.PROFILE },
             onSettings = { route = Route.SETTINGS },
             onNotifications = { route = Route.NOTIFICATIONS },
@@ -481,6 +483,19 @@ fun FutViewApp() {
                         onPrimary = { route = Route.MENU }
                     )
                 }
+            }
+        }
+
+        Route.ADMIN_STATUS -> {
+            SetStatusBarAppearance(lightIcons = true)
+            if (isAdmin) {
+                com.example.futview.ui.screens.admin.AdminStatusScreen(
+                    sessionUser = sessionUser,
+                    onBack = { route = Route.MENU },
+                    onSelectTab = selectMainTab
+                )
+            } else {
+                route = Route.MENU
             }
         }
 
