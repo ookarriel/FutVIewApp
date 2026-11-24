@@ -33,12 +33,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.rememberCameraPositionState
+import androidx.compose.ui.viewinterop.AndroidView
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
 import com.example.futview.data.Match
 import com.example.futview.data.Stadium
 import com.example.futview.ui.components.DemoBanner
@@ -239,23 +238,29 @@ fun StadiumDetailScreen(
                     val latitude = stadium.latitude.toDoubleOrNull()
                     val longitude = stadium.longitude.toDoubleOrNull()
 
-                    // Mapa embebido cuando el estadio tiene coordenadas.
+                    // Mapa OpenStreetMap (osmdroid, gratuito y sin clave) cuando hay coordenadas.
                     if (latitude != null && longitude != null) {
-                        GoogleMap(
+                        AndroidView(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(220.dp)
                                 .clip(RoundedCornerShape(12.dp)),
-                            cameraPositionState = rememberCameraPositionState {
-                                position = CameraPosition.fromLatLngZoom(LatLng(latitude, longitude), 15f)
+                            factory = { mapContext ->
+                                MapView(mapContext).apply {
+                                    setTileSource(TileSourceFactory.MAPNIK)
+                                    setMultiTouchControls(true)
+                                    controller.setZoom(15.5)
+                                    controller.setCenter(GeoPoint(latitude, longitude))
+                                    val marker = Marker(this).apply {
+                                        position = GeoPoint(latitude, longitude)
+                                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                                        title = stadium.name
+                                        snippet = stadium.address
+                                    }
+                                    overlays.add(marker)
+                                }
                             }
-                        ) {
-                            Marker(
-                                state = MarkerState(position = LatLng(latitude, longitude)),
-                                title = stadium.name,
-                                snippet = stadium.address
-                            )
-                        }
+                        )
                         Spacer(Modifier.height(16.dp))
                     }
 

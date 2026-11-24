@@ -41,14 +41,12 @@ android {
     }
 
     defaultConfig {
-        // Claves desde local.properties (no versionadas).
+        // Clave de API-Football desde local.properties (no versionadas).
         val localProperties = Properties().apply {
             val file = rootProject.file("local.properties")
             if (file.exists()) file.inputStream().use { load(it) }
         }
-        val mapsKey = localProperties.getProperty("MAPS_API_KEY") ?: ""
         val footballKey = localProperties.getProperty("API_FOOTBALL_KEY") ?: ""
-        manifestPlaceholders["MAPS_API_KEY"] = mapsKey
         buildConfigField("String", "API_FOOTBALL_KEY", "\"$footballKey\"")
     }
 }
@@ -76,6 +74,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.play.services.maps)
     implementation(libs.maps.compose)
+    implementation(libs.osmdroid)
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     testImplementation(libs.junit)

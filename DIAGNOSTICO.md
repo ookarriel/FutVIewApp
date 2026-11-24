@@ -154,11 +154,12 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - [x] Favoritos persistidos por usuario en `users/{uid}/favorites` (`UserFavoritesViewModel` + `FavoritesRepository`); con sesión activa se cargan y guardan automáticamente, y desaparecen al cerrar sesión.
 - [x] Reglas de seguridad escritas (`firestore.rules` + `firebase.json`); desplegar con `firebase deploy --only firestore:rules` y probar en consola (acción manual del usuario).
 
-### Fase 4 — Mapas ✅ COMPLETADA (falta pegar tu MAPS_API_KEY)
-- [x] Dependencias `play-services-maps` + `maps-compose`; clave vía `local.properties` (`MAPS_API_KEY=`) inyectada al manifest con placeholders (no hardcodeada). **Pegar tu clave en `local.properties`.**
-- [x] Mapa embebido con marcador en `StadiumDetailScreen` (coordenadas del estadio; si no tiene, se oculta).
-- [x] Botón "Cómo llegar en mapas" con Intent `geo:` (con o sin coordenadas).
-- [x] Permisos de ubicación: no requeridos (sin geolocalización por ahora).
+### Fase 4 — Mapas ✅ COMPLETADA — 100% gratuito con OpenStreetMap
+- [x] Mapa con OpenStreetMap vía **osmdroid** (gratuito, sin API key, sin tarjeta ni facturación) — reemplaza a Google Maps, que exige cuenta de facturación.
+- [x] Mapa embebido con marcador en `StadiumDetailScreen` (coordenadas del estadio; si no tiene, se oculta) + user agent y caché de tiles configurados en `FutViewApplication`.
+- [x] Botón "Cómo llegar en mapas" con Intent `geo:` (sin costo, abre la app de mapas del teléfono).
+- [x] Sin permisos de ubicación (no se usa geolocalización).
+- Alternativas evaluadas: Google Maps móvil es gratis e ilimitado desde mar-2025 (tier Essentials) pero exige tarjeta en Google Cloud; MapLibre+OSM es otra opción sin costo.
 
 ### Fase 4-B — API de fútbol (evaluación) ✅ Factible
 - **Recomendada: API-Football** (api-sports.io): plan gratuito con 100 req/día, cubre la Liga de Primera de Chile (league 265) con fixture, marcadores y estados. Actualización diaria = 1-2 requests.
