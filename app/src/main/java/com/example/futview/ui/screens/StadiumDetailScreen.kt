@@ -307,15 +307,6 @@ fun StadiumDetailScreen(
                     )
                 }
             }
-
-            item {
-                Text(
-                    text = "Programación sincronizada desde Firestore.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary,
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
-            }
         }
 
         FutViewBottomBar(

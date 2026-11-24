@@ -2,7 +2,7 @@ package com.example.futview.data
 
 /**
  * Dataset inicial de la Liga de Primera 2026 (equipos y estadios reales,
- * según Wikipedia/ANFP) para poblar Firestore desde el panel admin.
+ * según ANFP/ESPN) para poblar Firestore desde el panel admin.
  *
  * No son datos de UI: se escriben a Firestore y de ahí se muestran a la app.
  * Cualquier dato se puede editar después desde el panel de administración.
@@ -112,7 +112,7 @@ object SeedData {
         )
     )
 
-    /** Resultados reales de la temporada 2026 (destacados de la página oficial de Wikipedia/ESPN). */
+    /** Resultados reales de la temporada 2026 (destacados de la página oficial de ESPN). */
     val results = listOf(
         ResultSeed("2026-02-13", "Everton", "Huachipato", 0, 3),
         ResultSeed("2026-03-15", "Cobresal", "Deportes Limache", 2, 5),

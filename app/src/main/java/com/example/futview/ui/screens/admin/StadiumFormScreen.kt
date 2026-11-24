@@ -51,7 +51,6 @@ import com.example.futview.ui.components.AdminSectionHeader
 import com.example.futview.ui.components.FormCard
 import com.example.futview.ui.components.FormLabel
 import com.example.futview.ui.components.FormTextField
-import com.example.futview.ui.components.InfoNote
 import com.example.futview.ui.theme.Border
 import com.example.futview.ui.theme.Card
 import com.example.futview.ui.theme.Field
@@ -352,12 +351,6 @@ fun StadiumFormScreen() {
                         }
                     }
                 }
-            }
-
-            item {
-                InfoNote(
-                    text = "Valida la dirección y el aforo antes de publicar un partido."
-                )
             }
         }
     }

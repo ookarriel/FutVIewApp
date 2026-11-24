@@ -1,20 +1,13 @@
 package com.example.futview.ui.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,14 +24,11 @@ import androidx.compose.ui.unit.dp
 import com.example.futview.data.Match
 import com.example.futview.data.StandingRow
 import com.example.futview.ui.components.FirestoreErrorBanner
-import com.example.futview.ui.components.FilterPill
 import com.example.futview.ui.components.LoadingState
 import com.example.futview.ui.viewmodel.ResultsViewModel
 import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.FilterDropdownPill
 import com.example.futview.ui.components.FutViewSearchField
-import com.example.futview.ui.components.InfoNote
-import com.example.futview.ui.components.InfoPill
 import com.example.futview.ui.components.ResultCard
 import com.example.futview.ui.components.ScreenHeader
 import com.example.futview.ui.components.SecondaryButton
@@ -126,22 +116,6 @@ fun ResultsScreen(
             }
 
             item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    FilterPill(
-                        label = "Finalizados",
-                        selected = true,
-                        onClick = {}
-                    )
-                }
-            }
-
-            item {
                 SectionHeader(
                     title = "Últimos resultados",
                     trailing = "Mostrando ${visibleResults.size} de ${filtered.size}"
@@ -197,15 +171,6 @@ fun ResultsScreen(
             }
 
             item {
-                InfoPill(
-                    text = "${allResults.count { it.homeGoals != null }} partidos finalizados · " +
-                        "${allResults.sumOf { (it.homeGoals ?: 0) + (it.awayGoals ?: 0) }} goles",
-                    icon = Icons.Outlined.CheckCircle,
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
-            }
-
-            item {
                 StandingsTable(
                     rows = standings,
                     modifier = Modifier.padding(horizontal = 20.dp)
@@ -218,12 +183,6 @@ fun ResultsScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary,
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
-                )
-            }
-
-            item {
-                InfoNote(
-                    text = "Tabla oficial de la temporada 2026, sincronizada desde ESPN. También puedes actualizarla manualmente desde el panel de administración."
                 )
             }
         }

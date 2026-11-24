@@ -193,7 +193,7 @@ class FirestoreMatchRepository : MatchRepository {
         observeTeamsInternal(),
         observeResults()
     ) { standingsDoc, teams, results ->
-        // Si existe la tabla oficial (Wikipedia), se usa; si no, se calcula desde los resultados.
+        // Si existe la tabla oficial (ESPN), se usa; si no, se calcula desde los resultados.
         standingsDoc?.rows?.mapIndexed { index, row ->
             val normalized = normalizeEntityName(row.teamName)
             val team = teams.firstOrNull { normalizeEntityName(it.name) == normalized }

@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.GppGood
 import androidx.compose.material.icons.outlined.Mail
 import androidx.compose.material.icons.outlined.ManageAccounts
 import androidx.compose.material.icons.outlined.Person
@@ -57,8 +56,6 @@ import com.example.futview.ui.components.Avatar
 import com.example.futview.ui.components.FormCard
 import com.example.futview.ui.components.FormLabel
 import com.example.futview.ui.components.FormTextField
-import com.example.futview.ui.components.InfoNote
-import com.example.futview.ui.components.InfoPill
 import com.example.futview.ui.components.PrimaryButton
 import com.example.futview.ui.components.RoleBadge
 import com.example.futview.ui.components.SegmentedControl
@@ -205,13 +202,6 @@ fun UserFormScreen(
                         onSelect = { roleIndex = it }
                     )
 
-                    Spacer(Modifier.height(12.dp))
-
-                    InfoPill(
-                        text = "Admin: gestiona usuarios y todos los mantenedores.",
-                        icon = Icons.Outlined.GppGood
-                    )
-
                     Spacer(Modifier.height(18.dp))
 
                     AdminFormActions(
@@ -322,12 +312,6 @@ fun UserFormScreen(
                         }
                     }
                 }
-            }
-
-            item {
-                InfoNote(
-                    text = "Las contraseñas nunca aparecen en el listado. Editor puede gestionar clubes, estadios, fixture y resultados."
-                )
             }
         }
     }

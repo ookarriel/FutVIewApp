@@ -85,7 +85,7 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
   - `teams` (nombre, corto, ciudad, `stadiumId` + `stadiumName` denormalizado)
   - `stadiums` (nombre, comuna, dirección, capacidad, `location: GeoPoint`, equipo local)
   - `matches` (dayLabel/shortDate/matchday, hora, estado, goles, ids de equipos, nombre de estadio)
-  - `standings/2026` → tabla oficial de ESPN, con parser de Wikipedia como respaldo manual
+  - `standings/2026` → tabla oficial de ESPN
   - `users` (uid, nombre, correo, rol)
   - `users/{uid}/favorites` (favoritos por usuario)
   - `invites` (invitaciones al panel, pendientes de alta real)
@@ -153,7 +153,8 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - [x] Favoritos persistidos por usuario en `users/{uid}/favorites` (`UserFavoritesViewModel` + `FavoritesRepository`); con sesión activa se cargan y guardan automáticamente, y desaparecen al cerrar sesión.
 - [x] Reglas de seguridad escritas (`firestore.rules` + `firebase.json`); desplegar con `firebase deploy --only firestore:rules` y probar en consola (acción manual del usuario).
 
-### Fase 4 — Mapas ✅ COMPLETADA — 100% gratuito con MapLibre + OpenFreeMap
+### Fase 4 — Mapas
+✅ COMPLETADA — 100% gratuito con MapLibre + OpenFreeMap
 - [x] Mapa con **MapLibre 11.5 + tiles vectoriales de OpenFreeMap** (gratuito, ilimitado, sin API key ni tarjeta) — reemplaza a Google Maps (exige facturación) y a osmdroid (la política del tile server público de OSM no permite apps nativas en producción).
 - [x] Mapa embebido con marcador en `StadiumDetailScreen` (coordenadas del estadio; si no tiene, se oculta) + inicialización de MapLibre en `FutViewApplication`.
 - [x] Botón "Cómo llegar en mapas" con Intent `geo:` (sin costo, abre la app de mapas del teléfono).
@@ -165,9 +166,9 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - [x] `EspnSyncRepository`: escribe `matches` con id estable `espn-<eventId>`, reutiliza los equipos/estadios del seed emparejando nombres normalizados (sin duplicar clubes), infiere la jornada (8 partidos por fecha) y escribe `standings/2026`.
 - [x] Sincronización automática cada 6 horas (4 veces al día) al abrir la app con sesión + botón manual **"Sincronizar con ESPN"** en Admin → Equipos.
 - [x] Limpieza automática de documentos heredados de API-Football (`af-*`) y de los 5 resultados del seed inicial, para no duplicar marcadores.
-- [x] `AdminStatusScreen` muestra el estado de Auth, Firestore, última sincronización ESPN y MapLibre/OpenFreeMap.
+- [x] ~~`AdminStatusScreen` (dashboard "Estado del sistema")~~ — eliminado en la limpieza de UI, junto con el respaldo manual de Wikipedia (`WikipediaSyncViewModel` + `WikipediaStandingsRepository`).
 - **API-Football eliminada** (código y clave): su plan gratuito solo sirve temporadas 2021–2023, por lo que no podía alimentar la temporada 2026.
-- [x] La tabla de posiciones se lee de `standings/2026` (ESPN) con el parser de Wikipedia como respaldo manual.
+- [x] La tabla de posiciones se lee de `standings/2026` (ESPN); el respaldo manual de Wikipedia fue eliminado.
 
 ### Fase 5 — Pulido y release
 - [x] Dataset completo del fútbol chileno (Liga de Primera 2026) desde ESPN: 16 clubes, 240 partidos y tabla oficial.
@@ -196,3 +197,4 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 | 24-nov-2026 | **Resultados más recientes primero**: la pestaña Resultados ordena por fecha de kickoff (parseada de `dayLabel`) y hora, descendente; favoritos y acta conservan su orden original. Build debug OK. |
 | 24-nov-2026 | **"ÚLTIMO" y "PRÓXIMO PARTIDO" con datos reales**: `lastResult`/`nextMatch` de equipos y estadios se calculan desde `matches` (`data/ActivityResult.kt`); tarjetas de Equipos, Estadios, Favoritos y detalles muestran resúmenes ("Ganó 2-1 a X · 21 nov", "vs Y · 28 nov · 18:00") o "Por confirmar" si no hay datos. Build debug OK, instalada en dispositivo sin crashes. |
 | 24-nov-2026 | **Resultados: orden y paginación**: corregido el parseo de `dayLabel` (era case-sensitive y toda fecha caía a `MIN`, ordenando como si fuera agosto); la lista ahora ordena de verdad por fecha+hora descendente. Paginado de 5 en 5 con botón "Ver más" y encabezado de fecha por grupo; la tabla de posiciones queda a pocos scrolls del inicio. Build debug OK, instalada en dispositivo sin crashes. |
+| 24-nov-2026 | **Limpieza de notas y dashboards**: eliminados `InfoNote`/`InfoPill` y todas sus apariciones (notas de sincronización, "actualiza desde el panel", chips de estadísticas), el dashboard "Estado del sistema" (`AdminStatusScreen` + ruta + ítem de menú) y el código heredado del respaldo de Wikipedia (`WikipediaSyncViewModel`, `WikipediaStandingsRepository`, botón en Acta). Textos mockup del Acta ("Simulación de la jornada 1", "Vista previa") corregidos. Build debug OK. |

@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,7 +23,6 @@ import com.example.futview.data.Match
 import com.example.futview.data.StandingRow
 import com.example.futview.ui.components.DetailField
 import com.example.futview.ui.components.FutViewBottomBar
-import com.example.futview.ui.components.InfoPill
 import com.example.futview.ui.components.OutlineButton
 import com.example.futview.ui.components.ResultCard
 import com.example.futview.ui.components.ScreenHeader
@@ -116,25 +114,11 @@ fun ResultDetailScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
                     )
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = "Marcador oficial sincronizado desde ESPN.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
-                    )
                 }
             }
 
             item {
                 SectionHeader(title = "Tabla de posiciones", trailing = "Temporada 2026")
-            }
-
-            item {
-                InfoPill(
-                    text = "$finishedMatches partidos finalizados · $totalGoals goles",
-                    icon = Icons.Outlined.CheckCircle,
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
             }
 
             item {

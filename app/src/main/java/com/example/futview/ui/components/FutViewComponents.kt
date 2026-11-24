@@ -751,67 +751,6 @@ fun StandingsTable(
 }
 
 @Composable
-fun InfoNote(
-    text: String,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        Icon(
-            imageVector = Icons.Outlined.Info,
-            contentDescription = null,
-            tint = TextTertiary,
-            modifier = Modifier
-                .padding(top = 1.dp)
-                .size(15.dp)
-        )
-        Spacer(Modifier.width(8.dp))
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodySmall,
-            color = TextSecondary
-        )
-    }
-}
-
-@Composable
-fun InfoPill(
-    text: String,
-    modifier: Modifier = Modifier,
-    icon: ImageVector? = null,
-    container: Color = Field,
-    content: Color = TextSecondary
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(container)
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (icon != null) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = content,
-                modifier = Modifier.size(17.dp)
-            )
-            Spacer(Modifier.width(10.dp))
-        }
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodySmall,
-            color = content
-        )
-    }
-}
-
-@Composable
 private fun NavigationBar(
     items: List<Pair<String, ImageVector>>,
     selectedIndex: Int,

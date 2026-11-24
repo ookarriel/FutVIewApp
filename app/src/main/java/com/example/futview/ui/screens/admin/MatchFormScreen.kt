@@ -55,7 +55,6 @@ import com.example.futview.ui.components.FormCard
 import com.example.futview.ui.components.FormDropdown
 import com.example.futview.ui.components.FormLabel
 import com.example.futview.ui.components.FormTextField
-import com.example.futview.ui.components.InfoNote
 import com.example.futview.ui.components.StatusChip
 import com.example.futview.ui.theme.Border
 import com.example.futview.ui.theme.Card
@@ -243,12 +242,6 @@ fun MatchFormScreen() {
                     selectedMatchId = selectedMatchId,
                     onSelectMatch = { id -> selectedMatchId = id },
                     modifier = Modifier.padding(horizontal = 20.dp)
-                )
-            }
-
-            item {
-                InfoNote(
-                    text = "Toca un partido del fixture para seleccionarlo y eliminarlo."
                 )
             }
         }

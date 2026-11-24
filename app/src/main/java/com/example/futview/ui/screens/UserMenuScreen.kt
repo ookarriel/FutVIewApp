@@ -22,7 +22,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AdminPanelSettings
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material3.Icon
@@ -55,7 +54,6 @@ fun UserMenuScreen(
     darkTheme: Boolean,
     onDarkThemeChange: (Boolean) -> Unit,
     onAdmin: () -> Unit,
-    onStatus: () -> Unit = {},
     onLogout: () -> Unit
 ) {
     SetStatusBarAppearance(lightIcons = IsDarkTheme)
@@ -145,11 +143,6 @@ fun UserMenuScreen(
                     icon = Icons.Outlined.AdminPanelSettings,
                     label = "Administración",
                     onClick = onAdmin
-                )
-                MenuItemRow(
-                    icon = Icons.Outlined.Info,
-                    label = "Estado del sistema",
-                    onClick = onStatus
                 )
             }
         }

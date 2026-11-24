@@ -20,7 +20,6 @@ import com.example.futview.data.repository.MatchRepository
 import com.example.futview.data.repository.StadiumRepository
 import com.example.futview.data.repository.TeamRepository
 import com.example.futview.data.repository.UserRepository
-import com.example.futview.data.repository.WikipediaStandingsRepository
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -330,37 +329,6 @@ class MatchFormViewModel(
                 )
             }
         }
-    }
-}
-
-/** Sincroniza la tabla de posiciones real 2026 desde Wikipedia. */
-class WikipediaSyncViewModel : ViewModel() {
-
-    private val standingsRepository = WikipediaStandingsRepository()
-
-    private val _busy = MutableStateFlow(false)
-    val busy: StateFlow<Boolean> = _busy.asStateFlow()
-
-    private val _message = MutableStateFlow<String?>(null)
-    val message: StateFlow<String?> = _message.asStateFlow()
-
-    fun consumeMessage() {
-        _message.value = null
-    }
-
-    fun sync() {
-        if (_busy.value) return
-        _busy.value = true
-        viewModelScope.launch {
-            standingsRepository.syncStandings()
-                .onSuccess { _message.value = it }
-                .onFailure { _message.value = "Error: ${it.message}" }
-            _busy.value = false
-        }
-    }
-
-    companion object {
-        val Factory = viewModelFactory { initializer { WikipediaSyncViewModel() } }
     }
 }
 

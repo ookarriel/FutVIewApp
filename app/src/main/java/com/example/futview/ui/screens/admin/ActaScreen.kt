@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarToday
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Icon
@@ -46,15 +45,11 @@ import com.example.futview.ui.components.FirestoreErrorBanner
 import com.example.futview.ui.components.LoadingState
 import com.example.futview.ui.viewmodel.ActaViewModel
 import com.example.futview.ui.viewmodel.UiState
-import com.example.futview.ui.viewmodel.WikipediaSyncViewModel
 import com.example.futview.ui.components.AdminSectionHeader
 import com.example.futview.ui.components.Crest
 import com.example.futview.ui.components.FormCard
 import com.example.futview.ui.components.FormDropdown
 import com.example.futview.ui.components.FormLabel
-import com.example.futview.ui.components.InfoNote
-import com.example.futview.ui.components.InfoPill
-import com.example.futview.ui.components.OutlineButton
 import com.example.futview.ui.components.PrimaryButton
 import com.example.futview.ui.components.SegmentedControl
 import com.example.futview.ui.components.StandingsTable
@@ -89,15 +84,6 @@ fun ActaScreen() {
         }
     }
 
-    val wikiViewModel: WikipediaSyncViewModel = viewModel(factory = WikipediaSyncViewModel.Factory)
-    val wikiBusy by wikiViewModel.busy.collectAsStateWithLifecycle()
-    val wikiMessage by wikiViewModel.message.collectAsStateWithLifecycle()
-    LaunchedEffect(wikiMessage) {
-        wikiMessage?.let {
-            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-            wikiViewModel.consumeMessage()
-        }
-    }
     val matchLabels = matches.associate { it.id to "${it.home.name} vs. ${it.away.name}" }
     val selectedMatch = matches.firstOrNull { it.id == selectedMatchId }
     val blankTeam = Team(id = "", name = "", short = "", city = "", stadium = "", lastResult = "", nextMatch = "")
@@ -118,7 +104,7 @@ fun ActaScreen() {
             item {
                 FormCard(
                     title = "Acta del partido",
-                    subtitle = "Jornada 1 · Resultado seleccionado",
+                    subtitle = selectedMatch?.dayLabel ?: "Selecciona un partido",
                     icon = Icons.Outlined.EmojiEvents,
                     modifier = Modifier.padding(horizontal = 20.dp)
                 ) {
@@ -192,21 +178,6 @@ fun ActaScreen() {
                         onSelect = { statusIndex = it }
                     )
 
-                    Spacer(Modifier.height(10.dp))
-
-                    Text(
-                        text = "Solo los partidos finalizados suman a la tabla.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary
-                    )
-
-                    Spacer(Modifier.height(18.dp))
-
-                    OutlineButton(
-                        text = if (wikiBusy) "Actualizando desde Wikipedia…" else "Actualizar tabla (Wikipedia)",
-                        onClick = { wikiViewModel.sync() }
-                    )
-
                     Spacer(Modifier.height(18.dp))
 
                     PrimaryButton(
@@ -228,16 +199,8 @@ fun ActaScreen() {
             item {
                 AdminSectionHeader(
                     title = "Tabla de posiciones",
-                    subtitle = "Primera División · Simulación de la jornada 1",
-                    trailing = "Vista previa"
-                )
-            }
-
-            item {
-                InfoPill(
-                    text = "${standings.count { it.played > 0 }} partidos finalizados · ${standings.size} clubes",
-                    icon = Icons.Outlined.CheckCircle,
-                    modifier = Modifier.padding(horizontal = 20.dp)
+                    subtitle = "Se calcula desde los resultados registrados.",
+                    trailing = "Temporada 2026"
                 )
             }
 
@@ -254,12 +217,6 @@ fun ActaScreen() {
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary,
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
-                )
-            }
-
-            item {
-                InfoNote(
-                    text = "Clasificación calculada a partir de los resultados registrados; los empates se ordenan por nombre."
                 )
             }
         }

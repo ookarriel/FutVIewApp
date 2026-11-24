@@ -112,7 +112,7 @@ data class StandingDoc(
     }
 }
 
-/** Colección `standings` (tabla oficial descargada de Wikipedia, temporada 2026). */
+/** Colección `standings` (tabla oficial de ESPN, temporada 2026). */
 data class StandingsDoc(
     val season: Int = 0,
     val updatedAt: String = "",

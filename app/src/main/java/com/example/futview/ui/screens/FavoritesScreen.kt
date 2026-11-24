@@ -50,7 +50,6 @@ import com.example.futview.ui.components.Crest
 import com.example.futview.ui.components.EmptyState
 import com.example.futview.ui.components.FilterPill
 import com.example.futview.ui.components.FutViewSearchField
-import com.example.futview.ui.components.InfoNote
 import com.example.futview.ui.components.MatchCard
 import com.example.futview.ui.components.ScreenHeader
 import com.example.futview.ui.components.SectionHeader
@@ -302,23 +301,6 @@ fun FavoritesScreen(
                         modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)
                     )
                 }
-            }
-
-            if (total > 0) {
-                item {
-                    Text(
-                        text = "Los favoritos se guardan en tu cuenta y solo tú puedes verlos.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
-                    )
-                }
-            }
-
-            item {
-                InfoNote(
-                    text = "Tus favoritos están vinculados a tu cuenta. Toca una estrella marcada para dejar de seguir ese contenido."
-                )
             }
         }
     }

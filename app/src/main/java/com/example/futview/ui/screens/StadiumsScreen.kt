@@ -47,7 +47,6 @@ import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.FilterDropdownPill
 import com.example.futview.ui.components.FilterPill
 import com.example.futview.ui.components.FutViewSearchField
-import com.example.futview.ui.components.InfoNote
 import com.example.futview.ui.components.ScreenHeader
 import com.example.futview.ui.components.SectionHeader
 import com.example.futview.ui.components.SetStatusBarAppearance
@@ -175,12 +174,6 @@ fun StadiumsScreen(
                         modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)
                     )
                 }
-            }
-
-            item {
-                InfoNote(
-                    text = "Consulta las condiciones de acceso antes de ir al estadio."
-                )
             }
         }
     }

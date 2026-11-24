@@ -53,7 +53,6 @@ import com.example.futview.ui.components.Crest
 import com.example.futview.ui.components.FormCard
 import com.example.futview.ui.components.FormLabel
 import com.example.futview.ui.components.FormTextField
-import com.example.futview.ui.components.InfoNote
 import com.example.futview.ui.components.OutlineButton
 import com.example.futview.ui.theme.Border
 import com.example.futview.ui.theme.Card
@@ -349,12 +348,6 @@ fun ClubFormScreen() {
                         }
                     }
                 }
-            }
-
-            item {
-                InfoNote(
-                    text = "Selecciona un club de la lista para editarlo."
-                )
             }
         }
     }
