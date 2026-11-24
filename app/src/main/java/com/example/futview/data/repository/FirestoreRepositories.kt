@@ -7,6 +7,7 @@ import com.example.futview.data.StandingRow
 import com.example.futview.data.Team
 import com.example.futview.data.model.MatchDoc
 import com.example.futview.data.model.StadiumDoc
+import com.example.futview.data.model.StandingsDoc
 import com.example.futview.data.model.TeamDoc
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.GeoPoint
@@ -178,9 +179,28 @@ class FirestoreMatchRepository : MatchRepository {
         }
 
     override fun observeStandings(): Flow<List<StandingRow>> = combine(
+        callbackFlow {
+            val registration = Firebase.firestore.collection("standings").document("2026")
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) {
+                        trySend(null)
+                        return@addSnapshotListener
+                    }
+                    trySend(snapshot?.toObject(StandingsDoc::class.java))
+                }
+            awaitClose { registration.remove() }
+        },
         observeTeamsInternal(),
         observeResults()
-    ) { teams, results -> computeStandings(teams, results) }
+    ) { standingsDoc, teams, results ->
+        // Si existe la tabla oficial (Wikipedia), se usa; si no, se calcula desde los resultados.
+        standingsDoc?.rows?.mapIndexed { index, row ->
+            val team = teams.firstOrNull { it.name == row.teamName }
+                ?: Team(id = "wiki-${index + 1}", name = row.teamName, short = row.teamShort, city = "", stadium = "", lastResult = "", nextMatch = "")
+            StandingRow(index + 1, team, row.played.toInt(), row.points.toInt(), row.goalDifference.toInt())
+        }?.takeIf { it.isNotEmpty() }
+            ?: computeStandings(teams, results)
+    }
 
     override suspend fun createMatch(
         dayLabel: String,

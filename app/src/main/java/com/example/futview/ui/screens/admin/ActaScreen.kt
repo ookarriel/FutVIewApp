@@ -46,6 +46,7 @@ import com.example.futview.ui.components.FirestoreErrorBanner
 import com.example.futview.ui.components.LoadingState
 import com.example.futview.ui.viewmodel.ActaViewModel
 import com.example.futview.ui.viewmodel.UiState
+import com.example.futview.ui.viewmodel.WikipediaSyncViewModel
 import com.example.futview.ui.components.AdminSectionHeader
 import com.example.futview.ui.components.Crest
 import com.example.futview.ui.components.DemoBanner
@@ -54,6 +55,7 @@ import com.example.futview.ui.components.FormDropdown
 import com.example.futview.ui.components.FormLabel
 import com.example.futview.ui.components.InfoNote
 import com.example.futview.ui.components.InfoPill
+import com.example.futview.ui.components.OutlineButton
 import com.example.futview.ui.components.PrimaryButton
 import com.example.futview.ui.components.SegmentedControl
 import com.example.futview.ui.components.StandingsTable
@@ -85,6 +87,16 @@ fun ActaScreen() {
         message?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
             viewModel.consumeMessage()
+        }
+    }
+
+    val wikiViewModel: WikipediaSyncViewModel = viewModel(factory = WikipediaSyncViewModel.Factory)
+    val wikiBusy by wikiViewModel.busy.collectAsStateWithLifecycle()
+    val wikiMessage by wikiViewModel.message.collectAsStateWithLifecycle()
+    LaunchedEffect(wikiMessage) {
+        wikiMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            wikiViewModel.consumeMessage()
         }
     }
     val matchLabels = matches.associate { it.id to "${it.home.name} vs. ${it.away.name}" }
@@ -188,6 +200,13 @@ fun ActaScreen() {
                         text = "Solo los partidos finalizados suman a la tabla.",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
+                    )
+
+                    Spacer(Modifier.height(18.dp))
+
+                    OutlineButton(
+                        text = if (wikiBusy) "Actualizando desde Wikipedia…" else "Actualizar tabla (Wikipedia)",
+                        onClick = { wikiViewModel.sync() }
                     )
 
                     Spacer(Modifier.height(18.dp))

@@ -112,6 +112,21 @@ data class StandingDoc(
     }
 }
 
+/** Colección `standings` (tabla oficial descargada de Wikipedia, temporada 2026). */
+data class StandingsDoc(
+    val season: Int = 0,
+    val updatedAt: String = "",
+    val rows: List<RowDoc> = emptyList()
+)
+
+data class RowDoc(
+    val teamName: String = "",
+    val teamShort: String = "",
+    val played: Long = 0,
+    val points: Long = 0,
+    val goalDifference: Long = 0
+)
+
 /** Colección `users`. */
 data class UserDoc(
     val name: String = "",
