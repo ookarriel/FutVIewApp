@@ -40,6 +40,7 @@ android {
 
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:35.2.0"))
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
