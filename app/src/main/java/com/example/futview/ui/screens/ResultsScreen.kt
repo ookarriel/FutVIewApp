@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CheckCircle
@@ -42,6 +41,7 @@ import com.example.futview.ui.components.InfoNote
 import com.example.futview.ui.components.InfoPill
 import com.example.futview.ui.components.ResultCard
 import com.example.futview.ui.components.ScreenHeader
+import com.example.futview.ui.components.SecondaryButton
 import com.example.futview.ui.components.SectionHeader
 import com.example.futview.ui.components.SetStatusBarAppearance
 import com.example.futview.ui.components.StandingsTable
@@ -49,6 +49,10 @@ import com.example.futview.ui.theme.Page
 import com.example.futview.ui.theme.TextPrimary
 import com.example.futview.ui.theme.TextSecondary
 import com.example.futview.data.kickoffDate
+import androidx.compose.runtime.LaunchedEffect
+
+/** Partidos visibles por página en la pestaña Resultados. */
+private const val PAGE_SIZE = 5
 
 @Composable
 fun ResultsScreen(
@@ -60,6 +64,10 @@ fun ResultsScreen(
     SetStatusBarAppearance(lightIcons = true)
 
     var query by rememberSaveable { mutableStateOf("") }
+    var visibleCount by rememberSaveable { mutableStateOf(5) }
+
+    // Al buscar, la paginación vuelve a la primera página.
+    LaunchedEffect(query) { visibleCount = PAGE_SIZE }
 
     // TODO Fase 4: filtros por jornada/temporada derivados de los datos de Firestore.
 
@@ -82,6 +90,8 @@ fun ResultsScreen(
                 .thenByDescending { it.matchday }
                 .thenBy { it.home.name }
         )
+    val visibleResults = filtered.take(visibleCount)
+    val remaining = filtered.size - visibleResults.size
 
     Column(
         modifier = Modifier
@@ -134,30 +144,41 @@ fun ResultsScreen(
             item {
                 SectionHeader(
                     title = "Últimos resultados",
-                    trailing = "${filtered.size} partidos"
+                    trailing = "Mostrando ${visibleResults.size} de ${filtered.size}"
                 )
             }
 
-            if (filtered.isNotEmpty()) {
-                item {
-                    Text(
-                        text = filtered.first().dayLabel,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = TextPrimary,
-                        fontWeight = FontWeight.SemiBold,
+            visibleResults.forEachIndexed { index, match ->
+                if (index == 0 || match.dayLabel != visibleResults[index - 1].dayLabel) {
+                    item(key = "day-${match.id}") {
+                        Text(
+                            text = match.dayLabel,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = TextPrimary,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 20.dp)
+                        )
+                    }
+                }
+                item(key = match.id) {
+                    ResultCard(
+                        match = match,
+                        favorite = match.id in favoriteMatchIds,
+                        onToggleFavorite = { onToggleMatchFavorite(match.id) },
+                        onClick = { onResultClick(match.id) },
                         modifier = Modifier.padding(horizontal = 20.dp)
                     )
                 }
             }
 
-            items(filtered, key = { it.id }) { match ->
-                ResultCard(
-                    match = match,
-                    favorite = match.id in favoriteMatchIds,
-                    onToggleFavorite = { onToggleMatchFavorite(match.id) },
-                    onClick = { onResultClick(match.id) },
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
+            if (remaining > 0) {
+                item {
+                    SecondaryButton(
+                        text = "Ver más ($remaining restantes)",
+                        onClick = { visibleCount += PAGE_SIZE },
+                        modifier = Modifier.padding(horizontal = 20.dp)
+                    )
+                }
             }
 
             if (filtered.isEmpty() && resultsState is UiState.Success) {

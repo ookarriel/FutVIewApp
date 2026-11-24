@@ -2,6 +2,7 @@ package com.example.futview.data
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
 import java.util.Locale
 
 /*
@@ -12,8 +13,11 @@ import java.util.Locale
  */
 
 /** Formato de `dayLabel` escrito por la sincronización ESPN y los formularios admin. */
-private val kickoffFormatter: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM 'de' yyyy", Locale("es", "CL"))
+private val kickoffFormatter: DateTimeFormatter = DateTimeFormatterBuilder()
+    // `dayLabel` arranca con mayúscula ("Sábado, 28 de…"); sin esto el parseo falla.
+    .parseCaseInsensitive()
+    .appendPattern("EEEE, d 'de' MMMM 'de' yyyy")
+    .toFormatter(Locale("es", "CL"))
 
 /** Fecha de kickoff a partir de `dayLabel`; `LocalDate.MIN` si no se puede interpretar. */
 fun Match.kickoffDate(): LocalDate = try {
