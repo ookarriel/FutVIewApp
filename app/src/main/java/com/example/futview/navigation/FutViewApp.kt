@@ -5,6 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -13,15 +16,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.futview.data.AppContainer
 import com.example.futview.data.Match
 import com.example.futview.data.Stadium
 import com.example.futview.data.Team
+import com.example.futview.data.model.initialsOf
+import com.example.futview.ui.viewmodel.AuthStateViewModel
+import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.AdminBottomBar
 import com.example.futview.ui.components.FutViewBottomBar
 import com.example.futview.ui.components.ScreenHeader
 import com.example.futview.ui.components.SetStatusBarAppearance
+import com.example.futview.ui.components.EmptyState
 import com.example.futview.ui.screens.CheckEmailScreen
 import com.example.futview.ui.screens.ConnectionErrorScreen
 import com.example.futview.ui.screens.ContactSupportScreen
@@ -98,12 +108,35 @@ private fun MutableList<String>.toggle(id: String) {
 
 @Composable
 fun FutViewApp() {
+    val authViewModel: AuthStateViewModel = viewModel(factory = AuthStateViewModel.Factory)
+    val authState by authViewModel.authUser.collectAsStateWithLifecycle()
+    val sessionUser = (authState as? UiState.Success)?.data
+
+    if (authState is UiState.Loading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Page),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
+
+    val roleFlow = remember(sessionUser?.uid) {
+        AppContainer.userRepository.observeUserRole(sessionUser?.uid.orEmpty())
+    }
+    val userRole by roleFlow.collectAsState(initial = null)
+    val isAdmin = userRole in setOf("Admin", "Editor")
+
     var route by rememberSaveable { mutableStateOf(Route.LOGIN) }
     var tab by rememberSaveable { mutableStateOf(MainTab.PARTIDOS) }
     var adminTab by rememberSaveable { mutableStateOf(AdminTab.EQUIPOS) }
     var selectedMatchId by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedTeamId by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedStadiumId by rememberSaveable { mutableStateOf<String?>(null) }
+    var pendingEmail by rememberSaveable { mutableStateOf("") }
 
     // Datos del repositorio para las rutas de detalle y las búsquedas de estadio.
     // Fase 3: las pantallas de detalle cargarán por id con sus propios ViewModels.
@@ -192,30 +225,40 @@ fun FutViewApp() {
         }
     }
 
-    when (route) {
+    // Protección de rutas según sesión.
+    val authRoutes = setOf(Route.LOGIN, Route.SIGN_UP, Route.RECOVER, Route.CHECK_EMAIL, Route.NEW_PASSWORD)
+    val activeRoute = when {
+        sessionUser != null && (route == Route.LOGIN || route == Route.SIGN_UP || route == Route.RECOVER) -> Route.HOME
+        sessionUser == null && route !in authRoutes -> Route.LOGIN
+        else -> route
+    }
+
+    when (activeRoute) {
         Route.LOGIN -> LoginScreen(
-            onLogin = {
-                tab = MainTab.PARTIDOS
-                route = Route.HOME
-            },
             onSignUp = { route = Route.SIGN_UP },
             onRecover = { route = Route.RECOVER }
         )
 
         Route.SIGN_UP -> SignUpScreen(
             onBack = { route = Route.LOGIN },
-            onLogin = { route = Route.LOGIN }
+            onLogin = { route = Route.LOGIN },
+            onRegistered = { email ->
+                pendingEmail = email
+                route = Route.CHECK_EMAIL
+            }
         )
 
         Route.RECOVER -> RecoverAccessScreen(
             onBack = { route = Route.LOGIN },
-            onSent = { route = Route.CHECK_EMAIL }
+            onSent = { email ->
+                pendingEmail = email
+                route = Route.CHECK_EMAIL
+            }
         )
 
         Route.CHECK_EMAIL -> CheckEmailScreen(
-            email = "",
+            email = pendingEmail,
             onBack = { route = Route.RECOVER },
-            onResend = {},
             onLogin = { route = Route.LOGIN }
         )
 
@@ -281,11 +324,15 @@ fun FutViewApp() {
 
         Route.MENU -> UserMenuScreen(
             onClose = { route = Route.HOME },
+            isAdmin = isAdmin,
+            userName = sessionUser?.displayName.orEmpty(),
+            userEmail = sessionUser?.email.orEmpty(),
             onAdmin = {
                 adminTab = AdminTab.EQUIPOS
                 route = Route.ADMIN
             },
             onLogout = {
+                authViewModel.signOut()
                 tab = MainTab.PARTIDOS
                 adminTab = AdminTab.EQUIPOS
                 route = Route.LOGIN
@@ -300,13 +347,16 @@ fun FutViewApp() {
         Route.PROFILE -> ProfileScreen(
             onBack = { route = Route.MENU },
             onViewFavorites = { selectMainTab(MainTab.FAVORITOS.ordinal) },
-            onSelectTab = selectMainTab
+            onSelectTab = selectMainTab,
+            userName = sessionUser?.displayName.orEmpty(),
+            userEmail = sessionUser?.email.orEmpty()
         )
 
         Route.SETTINGS -> SettingsScreen(
             onBack = { route = Route.MENU },
             onChangePassword = { route = Route.NEW_PASSWORD },
             onLogout = {
+                authViewModel.signOut()
                 tab = MainTab.PARTIDOS
                 adminTab = AdminTab.EQUIPOS
                 route = Route.LOGIN
@@ -335,6 +385,7 @@ fun FutViewApp() {
 
         Route.ADMIN -> {
             SetStatusBarAppearance(lightIcons = true)
+            if (isAdmin) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -344,8 +395,8 @@ fun FutViewApp() {
                     title = adminTab.title,
                     subtitle = adminTab.subtitle,
                     onAvatarClick = { route = Route.MENU },
-                    userLabel = "Admin",
-                    userInitials = ""
+                    userLabel = sessionUser?.displayName.orEmpty().ifBlank { "Administración" },
+                    userInitials = initialsOf(sessionUser?.displayName)
                 )
 
                 Box(modifier = Modifier.weight(1f)) {
@@ -366,6 +417,28 @@ fun FutViewApp() {
                     selectedIndex = adminTab.ordinal,
                     onSelect = selectAdminTab
                 )
+            }
+            } else {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Page)
+                ) {
+                    ScreenHeader(
+                        title = "Administración",
+                        subtitle = "Panel restringido a administradores.",
+                        onAvatarClick = { route = Route.MENU },
+                        userLabel = sessionUser?.displayName.orEmpty().ifBlank { "Usuario" },
+                        userInitials = initialsOf(sessionUser?.displayName)
+                    )
+                    EmptyState(
+                        icon = Icons.Outlined.Lock,
+                        title = "Acceso restringido",
+                        message = "Tu cuenta no tiene permisos de administración. Si crees que deberías tenerlos, contacta a un administrador.",
+                        primaryText = "Volver al menú",
+                        onPrimary = { route = Route.MENU }
+                    )
+                }
             }
         }
 

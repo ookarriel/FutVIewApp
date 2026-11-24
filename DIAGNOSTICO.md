@@ -27,7 +27,7 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 | AGP | 9.2.1 | Kotlin integrado en AGP (no hay plugin `kotlin-android` separado) |
 | minSdk / targetSdk / compileSdk | 33 / 36 / 37 | |
 | applicationId | `com.example.futview` | ⚠️ Cambiar antes de publicar |
-| Firebase | `google-services.json` (proyecto `futview-a23f1`, package correcto) + plugin `com.google.gms.google-services` 4.6.0 + BOM 35.2.0 | ✅ Configuración base lista, ❌ sin dependencias de Auth/Firestore |
+| Firebase | `google-services.json` (proyecto `futview-a23f1`, package correcto) + plugin `com.google.gms.google-services` 4.6.0 + BOM 35.2.0 | ✅ Configuración base lista; Auth conectado (Fase 2); Firestore como dependencia y repos de usuarios; datos de catálogo pendientes (Fase 3) |
 | Mapas | — | ❌ No integrado |
 | Navegación | Enum manual + `BackHandler` (`navigation/FutViewApp.kt`) | ⚠️ Funciona para el prototipo; evaluar migrar a Navigation Compose |
 | Tests | Solo plantilla (`ExampleUnitTest`, `ExampleInstrumentedTest`) | ❌ Sin tests reales |
@@ -54,11 +54,12 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - ℹ️ El objeto demo `FutViewData` fue eliminado en la Fase 0; las pantallas leen de listas vacías con `// TODO Fase 3` marcando el punto de conexión al repositorio.
 
 ### Arquitectura (creada en la Fase 1)
-- **`data/repository/`**: contratos `TeamRepository`, `StadiumRepository`, `MatchRepository`, `UserRepository` (exponen `Flow`). Implementaciones vacías temporales (`Empty*Repository`) hasta la Fase 3.
+- **`data/repository/`**: contratos `TeamRepository`, `StadiumRepository`, `MatchRepository`, `UserRepository` (exponen `Flow`). Implementaciones vacías temporales (`Empty*Repository`) para catálogos hasta la Fase 3. **Fase 2**: `AuthRepository` + `FirebaseAuthRepository` y `FirestoreUserRepository` (colección `users` con rol) conectados en `AppContainer`.
 - **`data/model/FirestoreDtos.kt`**: DTOs de Firestore (`TeamDoc`, `StadiumDoc` con `GeoPoint`, `MatchDoc`, `StandingDoc`, `UserDoc`) con mapeadores a los modelos de dominio.
 - **`data/AppContainer.kt`**: inyección manual; punto único para cambiar los stubs por implementaciones de Firestore.
-- **`ui/viewmodel/`**: `UiState` (Loading/Success/Error) + ViewModels de las 5 pestañas (Partidos, Resultados, Equipos, Estadios, Favoritos) y de los formularios admin (Equipos, Estadios, Usuarios, Partidos/Fixture, Acta), todos con reintento.
+- **`ui/viewmodel/`**: `UiState` (Loading/Success/Error) + ViewModels de las 5 pestañas (Partidos, Resultados, Equipos, Estadios, Favoritos) y de los formularios admin (Equipos, Estadios, Usuarios, Partidos/Fixture, Acta), todos con reintento. **Fase 2**: `AuthStateViewModel` (sesión global) y ViewModels de Login, Registro, Recuperar, Nueva contraseña y Reenvío de enlace.
 - **Estados de carga/error en UI**: `LoadingState` (carga) y `FirestoreErrorBanner` (aviso pasivo de problema con la base de datos, con reintento) integrados en todas las pantallas que leen datos; `ConnectionErrorScreen` se reserva para un corte total de conexión.
+- **Sesión y rutas (Fase 2)**: splash mientras se resuelve la sesión; rutas de acceso (login/registro/recuperar) solo sin sesión; el resto de la app solo con sesión; acceso a Administración filtrado por rol.
 
 ### Configuración
 - ✅ `app/google-services.json` presente y con el package correcto.
@@ -69,13 +70,14 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 
 ## 4. Lo que falta (brechas principales)
 
-### A. Firebase Authentication — ❌ No implementado
-- [ ] Dependencias: `firebase-auth` (KTX) en `app/build.gradle.kts`.
-- [ ] `FirebaseAuth` real en Login/SignUp/Recuperar/Logout (hoy todo es simulado).
-- [ ] Sesión persistente: arrancar en HOME si hay sesión (`AuthStateListener` / flujo `currentUser`).
-- [ ] Manejo de errores de auth (email/contraseña inválidos, usuario no existe, etc.) mostrados en UI.
-- [ ] Enviar verificación de email y correo de recuperación de verdad.
-- [ ] Reglas de seguridad basadas en roles (admin/editor/usuario). Roles: modelo Firestore (colección `users` con `role`) o custom claims.
+### A. Firebase Authentication — ✅ Implementado en Fase 2 (salvo reglas)
+- [x] Dependencias: `firebase-auth` (fijada a 24.0.1: la 25 del BOM requiere Kotlin 2.4).
+- [x] `FirebaseAuth` real en Login/SignUp/Recuperar/Logout.
+- [x] Sesión persistente: arranca en HOME si hay sesión (`AuthStateListener` → `AuthStateViewModel`), splash de carga mientras se resuelve la sesión.
+- [x] Manejo de errores de auth traducidos a español (`authErrorMessage`) y mostrados en la UI.
+- [x] Enviar verificación de email (al registrarse y reenviable desde "Revisa tu correo") y recuperación de contraseña real.
+- [x] Colección `users` con rol: se crea al registrarse (`role: "Usuario"`) y se lee vía `FirestoreUserRepository`.
+- [ ] Reglas de seguridad basadas en roles en la consola de Firestore (Fase 3). Promoción a Admin: editar `users/{uid}.role = "Admin"` manualmente en la consola.
 
 ### B. Cloud Firestore — ❌ No implementado
 - [x] Dependencias: `firebase-firestore` (agregada en Fase 1 para el mapeo con `GeoPoint`).
@@ -138,11 +140,11 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - [x] Estados de carga/error en UI (`UiState` + `LoadingState` en todas las pantallas con datos).
 - [x] Aviso pasivo de error de Firebase: `FirestoreErrorBanner` integrado en las 10 pantallas con datos — informa que hay un problema con la base de datos y permite reintentar sin bloquear la pantalla. `ConnectionErrorScreen` queda como pantalla completa para el caso de corte total.
 
-### Fase 2 — Firebase Auth
-- [ ] Dependencia + login real email/contraseña.
-- [ ] Registro + verificación de email + recuperación de contraseña.
-- [ ] Persistencia de sesión y logout real.
-- [ ] Colección `users` con rol; acceso al panel admin solo para admin/editor.
+### Fase 2 — Firebase Auth ✅ COMPLETADA
+- [x] Dependencia `firebase-auth` + login real email/contraseña (`FirebaseAuthRepository`, errores traducidos a español, botón con estado de carga).
+- [x] Registro real + verificación de email + recuperación de contraseña por correo (`CheckEmailScreen` reenvía el enlace).
+- [x] Persistencia de sesión (`AuthStateListener`; arranque en HOME con sesión activa y splash mientras resuelve) y logout real (menú y configuración).
+- [x] Colección `users` con rol: documento creado al registrarse; `observeUserRole` en vivo; panel admin solo para Admin/Editor (item oculto en el menú + pantalla "Acceso restringido" en la ruta). Datos reales de nombre/email en menú y perfil.
 
 ### Fase 3 — Firestore
 - [ ] Cargar equipos, estadios, partidos y resultados reales desde Firestore.
@@ -170,3 +172,4 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 | 24-nov-2026 | Diagnóstico inicial. Prototipo UI completo; Firebase configurado a nivel de proyecto pero sin código; mapas no integrados. |
 | 24-nov-2026 | **Fase 0 completada**: limpieza de `build.gradle.kts` + permiso `INTERNET` (commit `f361685`); eliminados los datos hardcodeados (`FutViewData` → `data/Models.kt`), credenciales, favoritos y notificaciones demo; pantallas quedan con estados vacíos y `TODO Fase 3` marcando la conexión al repositorio. Compilación OK. |
 | 24-nov-2026 | **Fase 1 completada**: capa de datos (`data/repository` con contratos + stubs, `data/model` con DTOs Firestore/GeoPoint, `data/AppContainer` DI manual), dependencias `firebase-firestore` + `lifecycle-viewmodel-compose` + `lifecycle-runtime-compose`, `UiState` (Loading/Success/Error) y 10 ViewModels (5 pestañas + 5 admin) con reintento; estados de carga e integrado el aviso pasivo de error de Firebase (`FirestoreErrorBanner`) en todas las pantallas con datos. Compilación OK. |
+| 24-nov-2026 | **Fase 2 completada**: Firebase Auth real (login, registro con verificación de email, recuperación y cambio de contraseña), sesión persistente con splash de arranque, logout real, errores de auth traducidos a español; colección `users` con rol creada al registrarse y leída en vivo; panel admin restringido a Admin/Editor; nombre/email reales en menú y perfil. Nota: `firebase-auth` fijada a 24.0.1 (la 25 del BOM exige Kotlin 2.4). Compilación OK. |

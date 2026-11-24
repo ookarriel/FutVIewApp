@@ -35,6 +35,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.futview.ui.viewmodel.LoginViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,11 +63,14 @@ import com.example.futview.ui.theme.TextTertiary
 
 @Composable
 fun LoginScreen(
-    onLogin: () -> Unit,
     onSignUp: () -> Unit,
     onRecover: () -> Unit
 ) {
     SetStatusBarAppearance(lightIcons = false)
+
+    val viewModel: LoginViewModel = viewModel(factory = LoginViewModel.Factory)
+    val busy by viewModel.busy.collectAsStateWithLifecycle()
+    val error by viewModel.error.collectAsStateWithLifecycle()
 
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
@@ -219,11 +225,21 @@ fun LoginScreen(
                 )
             }
 
+            error?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             Spacer(Modifier.height(20.dp))
 
             PrimaryButton(
-                text = "Iniciar sesión",
-                onClick = onLogin,
+                text = if (busy) "Ingresando…" else "Iniciar sesión",
+                onClick = { viewModel.signIn(email.trim(), password) },
                 icon = Icons.Outlined.Login
             )
         }

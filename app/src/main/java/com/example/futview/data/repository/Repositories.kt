@@ -31,4 +31,8 @@ interface MatchRepository {
 
 interface UserRepository {
     fun observeUsers(): Flow<List<SystemUser>>
+    /** Rol del usuario (colección `users`): "Admin", "Editor" o "Usuario". */
+    fun observeUserRole(uid: String): Flow<String?>
+    /** Crea el documento del usuario en Firestore si no existe (al registrarse). */
+    suspend fun ensureUserDoc(uid: String, name: String, email: String): Result<Unit>
 }

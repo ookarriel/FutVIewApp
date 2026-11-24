@@ -35,4 +35,7 @@ class EmptyMatchRepository : MatchRepository {
 
 class EmptyUserRepository : UserRepository {
     override fun observeUsers(): Flow<List<SystemUser>> = flowOf(emptyList())
+    override fun observeUserRole(uid: String): Flow<String?> = flowOf(null)
+    override suspend fun ensureUserDoc(uid: String, name: String, email: String): Result<Unit> =
+        Result.success(Unit)
 }

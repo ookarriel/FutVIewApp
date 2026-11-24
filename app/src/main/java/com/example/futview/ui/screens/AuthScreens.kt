@@ -31,10 +31,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.futview.ui.viewmodel.CheckEmailViewModel
+import com.example.futview.ui.viewmodel.NewPasswordViewModel
+import com.example.futview.ui.viewmodel.RecoverViewModel
+import com.example.futview.ui.viewmodel.SignUpViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -115,15 +122,25 @@ private fun AccessHeader(
 @Composable
 fun SignUpScreen(
     onBack: () -> Unit,
-    onLogin: () -> Unit
+    onLogin: () -> Unit,
+    onRegistered: (String) -> Unit
 ) {
     SetStatusBarAppearance(lightIcons = false)
+
+    val viewModel: SignUpViewModel = viewModel(factory = SignUpViewModel.Factory)
+    val busy by viewModel.busy.collectAsStateWithLifecycle()
+    val error by viewModel.error.collectAsStateWithLifecycle()
+    val registered by viewModel.registered.collectAsStateWithLifecycle()
 
     var name by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var confirm by rememberSaveable { mutableStateOf("") }
     var visible by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(registered) {
+        if (registered) onRegistered(email.trim())
+    }
 
     Column(
         modifier = Modifier
@@ -237,11 +254,21 @@ fun SignUpScreen(
                 color = TextSecondary
             )
 
+            error?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             Spacer(Modifier.height(20.dp))
 
             PrimaryButton(
-                text = "Crear mi cuenta",
-                onClick = onLogin
+                text = if (busy) "Creando cuenta…" else "Crear mi cuenta",
+                onClick = { viewModel.signUp(name.trim(), email.trim(), password, confirm) }
             )
 
             Spacer(Modifier.height(12.dp))
@@ -268,11 +295,20 @@ fun SignUpScreen(
 @Composable
 fun RecoverAccessScreen(
     onBack: () -> Unit,
-    onSent: () -> Unit
+    onSent: (String) -> Unit
 ) {
     SetStatusBarAppearance(lightIcons = false)
 
+    val viewModel: RecoverViewModel = viewModel(factory = RecoverViewModel.Factory)
+    val busy by viewModel.busy.collectAsStateWithLifecycle()
+    val error by viewModel.error.collectAsStateWithLifecycle()
+    val sent by viewModel.sent.collectAsStateWithLifecycle()
+
     var email by rememberSaveable { mutableStateOf("") }
+
+    LaunchedEffect(sent) {
+        if (sent) onSent(email.trim())
+    }
 
     Column(
         modifier = Modifier
@@ -323,11 +359,21 @@ fun RecoverAccessScreen(
                 keyboardType = KeyboardType.Email
             )
 
+            error?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             Spacer(Modifier.height(20.dp))
 
             PrimaryButton(
-                text = "Enviar enlace de recuperación",
-                onClick = onSent,
+                text = if (busy) "Enviando…" else "Enviar enlace de recuperación",
+                onClick = { viewModel.sendReset(email.trim()) },
                 icon = Icons.Outlined.Send
             )
 
@@ -356,10 +402,13 @@ fun RecoverAccessScreen(
 fun CheckEmailScreen(
     email: String,
     onBack: () -> Unit,
-    onResend: () -> Unit,
     onLogin: () -> Unit
 ) {
     SetStatusBarAppearance(lightIcons = false)
+
+    val viewModel: CheckEmailViewModel = viewModel(factory = CheckEmailViewModel.Factory)
+    val busy by viewModel.busy.collectAsStateWithLifecycle()
+    val info by viewModel.info.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -424,10 +473,20 @@ fun CheckEmailScreen(
             Spacer(Modifier.height(22.dp))
 
             PrimaryButton(
-                text = "Reenviar enlace",
-                onClick = onResend,
+                text = if (busy) "Enviando…" else "Reenviar enlace",
+                onClick = { viewModel.resend(email.trim()) },
                 icon = Icons.Outlined.Send
             )
+
+            info?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
             Spacer(Modifier.height(12.dp))
 
@@ -454,6 +513,15 @@ fun NewPasswordScreen(
     onSaved: () -> Unit
 ) {
     SetStatusBarAppearance(lightIcons = false)
+
+    val viewModel: NewPasswordViewModel = viewModel(factory = NewPasswordViewModel.Factory)
+    val busy by viewModel.busy.collectAsStateWithLifecycle()
+    val error by viewModel.error.collectAsStateWithLifecycle()
+    val saved by viewModel.saved.collectAsStateWithLifecycle()
+
+    LaunchedEffect(saved) {
+        if (saved) onSaved()
+    }
 
     var password by rememberSaveable { mutableStateOf("") }
     var confirm by rememberSaveable { mutableStateOf("") }
@@ -542,11 +610,21 @@ fun NewPasswordScreen(
                 color = TextSecondary
             )
 
+            error?.let {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
             Spacer(Modifier.height(20.dp))
 
             PrimaryButton(
-                text = "Guardar nueva contraseña",
-                onClick = onSaved
+                text = if (busy) "Guardando…" else "Guardar nueva contraseña",
+                onClick = { viewModel.changePassword(password, confirm) }
             )
 
             Spacer(Modifier.height(12.dp))

@@ -52,6 +52,7 @@ import com.example.futview.ui.components.FormLabel
 import com.example.futview.ui.components.FormTextField
 import com.example.futview.ui.components.FutViewBottomBar
 import com.example.futview.ui.components.FutViewSearchField
+import com.example.futview.data.model.initialsOf
 import com.example.futview.ui.components.OutlineButton
 import com.example.futview.ui.components.PrimaryButton
 import com.example.futview.ui.components.ScreenHeader
@@ -70,12 +71,14 @@ import com.example.futview.ui.theme.TextTertiary
 fun ProfileScreen(
     onBack: () -> Unit,
     onViewFavorites: () -> Unit,
-    onSelectTab: (Int) -> Unit
+    onSelectTab: (Int) -> Unit,
+    userName: String = "",
+    userEmail: String = ""
 ) {
     SetStatusBarAppearance(lightIcons = true)
 
-    var name by rememberSaveable { mutableStateOf("") }
-    var email by rememberSaveable { mutableStateOf("") }
+    var name by rememberSaveable(userName) { mutableStateOf(userName) }
+    var email by rememberSaveable(userEmail) { mutableStateOf(userEmail) }
 
     Column(
         modifier = Modifier
@@ -104,11 +107,11 @@ fun ProfileScreen(
                         .padding(18.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Avatar(initials = "AG", size = 52)
+                        Avatar(initials = initialsOf(userName), size = 52)
                         Spacer(Modifier.width(14.dp))
                         Column {
                             Text(
-                                text = "Ana García",
+                                text = userName.ifBlank { "Usuario" },
                                 style = MaterialTheme.typography.titleLarge,
                                 color = TextPrimary
                             )

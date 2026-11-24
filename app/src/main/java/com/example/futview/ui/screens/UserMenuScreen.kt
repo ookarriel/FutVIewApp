@@ -40,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.futview.data.model.initialsOf
 import com.example.futview.ui.components.Avatar
 import com.example.futview.ui.components.MenuItemRow
 import com.example.futview.ui.components.SetStatusBarAppearance
@@ -53,6 +54,9 @@ import com.example.futview.ui.theme.TextSecondary
 @Composable
 fun UserMenuScreen(
     onClose: () -> Unit,
+    isAdmin: Boolean = false,
+    userName: String = "",
+    userEmail: String = "",
     onAdmin: () -> Unit,
     onLogout: () -> Unit,
     onProfile: () -> Unit,
@@ -117,17 +121,17 @@ fun UserMenuScreen(
         Spacer(Modifier.height(28.dp))
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Avatar(initials = "AG", size = 56)
+            Avatar(initials = initialsOf(userName), size = 56)
             Spacer(Modifier.width(14.dp))
             Column {
                 Text(
-                    text = "Ana García",
+                    text = userName.ifBlank { "Usuario" },
                     style = MaterialTheme.typography.titleLarge,
                     color = TextPrimary
                 )
                 Spacer(Modifier.height(3.dp))
                 Text(
-                    text = "",
+                    text = userEmail,
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary
                 )
@@ -158,11 +162,13 @@ fun UserMenuScreen(
                 badge = "3",
                 onClick = onNotifications
             )
-            MenuItemRow(
-                icon = Icons.Outlined.AdminPanelSettings,
-                label = "Administración",
-                onClick = onAdmin
-            )
+            if (isAdmin) {
+                MenuItemRow(
+                    icon = Icons.Outlined.AdminPanelSettings,
+                    label = "Administración",
+                    onClick = onAdmin
+                )
+            }
         }
 
         Spacer(Modifier.height(18.dp))

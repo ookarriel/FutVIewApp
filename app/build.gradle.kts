@@ -40,6 +40,10 @@ android {
 
 dependencies {
     implementation(platform("com.google.firebase:firebase-bom:35.2.0"))
+    // Versión fijada con `strictly`: firebase-auth 25 (BOM 35.2.0) requiere Kotlin 2.4; el proyecto usa 2.2.
+    implementation("com.google.firebase:firebase-auth") {
+        version { strictly("24.0.1") }
+    }
     implementation("com.google.firebase:firebase-firestore")
 
     implementation(platform(libs.androidx.compose.bom))
