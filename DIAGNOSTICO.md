@@ -173,6 +173,7 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - [x] Dataset completo del fútbol chileno (Liga de Primera 2026) desde ESPN: 16 clubes, 240 partidos y tabla oficial.
 - [x] Limpieza de UI: eliminados `DemoBanner` y textos de mockup/demostración; cabeceras muestran el usuario real; menú reducido a modo oscuro, administración/estado y cierre de sesión.
 - [x] Modo oscuro persistente con `SharedPreferences`, paleta dinámica y controles compatibles.
+- [x] Pantalla de resultados ordenada del más reciente al más antiguo (fecha + hora de kickoff).
 - [ ] Tests básicos, README decente, icono de app, `applicationId` final.
 - [ ] Build release con minify y verificación.
 
@@ -192,3 +193,4 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 | 24-nov-2026 | **Mapa MapLibre + OpenFreeMap**: se reemplazó osmdroid porque la política del tile server público de OSM no permite apps nativas en producción. Tiles vectoriales gratis, ilimitados y sin clave. Verificado en dispositivo. |
 | 24-nov-2026 | **ESPN reemplaza a API-Football**: `EspnSyncRepository` descarga los 240 partidos de la temporada 2026 (fecha/hora real, estado y marcador) y la tabla oficial, reutiliza equipos/estadios del seed y elimina los registros heredados (`af-*` y los 5 resultados del seed). Sync automática cada 6 h + botón admin. API-Football y su clave fueron eliminadas. Verificado en dispositivo: fixture y resultados reales visibles, 0 crashes. |
 | 24-nov-2026 | **Limpieza de UI + modo oscuro**: eliminados `DemoBanner`, textos de mockup/demostración y botones sin uso (perfil, cuenta, configuración, notificaciones, ayuda, contacto). Cabeceras y admin usan el usuario autenticado real; menú reducido a switch persistente de modo oscuro, administración/estado y logout. Paleta clara/oscura y controles dinámicos. Build debug OK, instalada en dispositivo y sin crashes. |
+| 24-nov-2026 | **Resultados más recientes primero**: la pestaña Resultados ordena por fecha de kickoff (parseada de `dayLabel`) y hora, descendente; favoritos y acta conservan su orden original. Build debug OK. |

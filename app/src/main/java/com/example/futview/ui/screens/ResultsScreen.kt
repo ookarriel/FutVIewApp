@@ -48,6 +48,20 @@ import com.example.futview.ui.components.StandingsTable
 import com.example.futview.ui.theme.Page
 import com.example.futview.ui.theme.TextPrimary
 import com.example.futview.ui.theme.TextSecondary
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+
+/** Formato de `dayLabel` escrito por la sincronización ESPN y los formularios admin. */
+private val dayLabelFormatter: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM 'de' yyyy", Locale("es", "CL"))
+
+/** Fecha del partido a partir de `dayLabel`; `LocalDate.MIN` si no se puede interpretar. */
+private fun Match.resultDate(): LocalDate = try {
+    LocalDate.parse(dayLabel, dayLabelFormatter)
+} catch (_: Exception) {
+    LocalDate.MIN
+}
 
 @Composable
 fun ResultsScreen(
@@ -68,11 +82,19 @@ fun ResultsScreen(
 
     val allResults = (resultsState as? UiState.Success)?.data.orEmpty()
     val standings = (standingsState as? UiState.Success)?.data.orEmpty()
-    val filtered = allResults.filter { match ->
-        query.isBlank() ||
-            match.home.name.contains(query, ignoreCase = true) ||
-            match.away.name.contains(query, ignoreCase = true)
-    }
+    // Del más reciente al más antiguo: última fecha arriba y, a igualdad, el último horario.
+    val filtered = allResults
+        .filter { match ->
+            query.isBlank() ||
+                match.home.name.contains(query, ignoreCase = true) ||
+                match.away.name.contains(query, ignoreCase = true)
+        }
+        .sortedWith(
+            compareByDescending<Match> { it.resultDate() }
+                .thenByDescending { it.time }
+                .thenByDescending { it.matchday }
+                .thenBy { it.home.name }
+        )
 
     Column(
         modifier = Modifier
