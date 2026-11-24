@@ -62,14 +62,20 @@ class WikipediaStandingsRepository {
             return Result.failure(IllegalStateException("La tabla de Wikipedia trajo ${rows.size} equipos; se esperaban 16."))
         }
 
-        val doc = StandingsDoc(
-            season = 2026,
-            updatedAt = LocalDateTime.now()
-                .format(DateTimeFormatter.ofPattern("d MMM yyyy · HH:mm", Locale("es", "CL"))),
-            rows = rows
-        )
-        db.collection("standings").document("2026").set(doc).await()
-        return Result.success("Tabla 2026 actualizada desde Wikipedia (${rows.size} equipos).")
+        return try {
+            val doc = StandingsDoc(
+                season = 2026,
+                updatedAt = LocalDateTime.now()
+                    .format(DateTimeFormatter.ofPattern("d MMM yyyy · HH:mm", Locale("es", "CL"))),
+                rows = rows
+            )
+            db.collection("standings").document("2026").set(doc).await()
+            Result.success("Tabla 2026 actualizada desde Wikipedia (${rows.size} equipos).")
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (throwable: Throwable) {
+            Result.failure(throwable)
+        }
     }
 
     private fun clean(htmlCell: String): String = htmlCell

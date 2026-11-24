@@ -32,6 +32,12 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // Tabla de posiciones oficial sincronizada (Wikipedia) — escritura solo Admin/Editor.
+    match /standings/{seasonId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
     // Perfil de usuario: uno mismo lee lo suyo; los roles solo los cambia un Admin.
     match /users/{userId} {
       allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
