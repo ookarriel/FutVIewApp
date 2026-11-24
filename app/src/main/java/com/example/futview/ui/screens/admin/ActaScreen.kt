@@ -37,7 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.futview.data.FutViewData
+import com.example.futview.data.StandingRow
+import com.example.futview.data.Team
 import com.example.futview.ui.components.AdminSectionHeader
 import com.example.futview.ui.components.Crest
 import com.example.futview.ui.components.DemoBanner
@@ -59,13 +60,15 @@ import com.example.futview.ui.theme.TextSecondary
 fun ActaScreen() {
     val context = LocalContext.current
 
-    var selectedMatch by rememberSaveable { mutableStateOf("Colo-Colo vs. Palestino") }
-    var homeGoals by rememberSaveable { mutableStateOf("2") }
-    var awayGoals by rememberSaveable { mutableStateOf("0") }
+    var selectedMatch by rememberSaveable { mutableStateOf("") }
+    var homeGoals by rememberSaveable { mutableStateOf("") }
+    var awayGoals by rememberSaveable { mutableStateOf("") }
     var statusIndex by rememberSaveable { mutableStateOf(2) }
 
-    val home = FutViewData.coloColo
-    val away = FutViewData.palestino
+    // TODO Fase 3: tomar los equipos y la tabla desde el repositorio de Firestore.
+    val home = Team(id = "", name = "", short = "", city = "", stadium = "", lastResult = "", nextMatch = "")
+    val away = home
+    val standings = emptyList<StandingRow>()
 
     Column(
         modifier = Modifier
@@ -90,10 +93,7 @@ fun ActaScreen() {
                     Spacer(Modifier.height(8.dp))
                     FormDropdown(
                         value = selectedMatch,
-                        options = listOf(
-                            "Colo-Colo vs. Palestino",
-                            "U. de Chile vs. U. Católica"
-                        ),
+                        options = emptyList(),
                         onSelect = { selectedMatch = it }
                     )
 
@@ -108,7 +108,7 @@ fun ActaScreen() {
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            text = "12 feb 2027 · 18:00 · Monumental",
+                            text = "",
                             style = MaterialTheme.typography.bodySmall,
                             color = TextSecondary
                         )
@@ -182,7 +182,7 @@ fun ActaScreen() {
 
             item {
                 InfoPill(
-                    text = "2 partidos finalizados · 4 clubes",
+                    text = "${standings.count { it.played > 0 }} partidos finalizados · ${standings.size} clubes",
                     icon = Icons.Outlined.CheckCircle,
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
@@ -190,7 +190,7 @@ fun ActaScreen() {
 
             item {
                 StandingsTable(
-                    rows = FutViewData.standings,
+                    rows = standings,
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
@@ -206,7 +206,7 @@ fun ActaScreen() {
 
             item {
                 InfoNote(
-                    text = "Clasificación ficticia, no oficial. Incluye Colo-Colo 2-0 Palestino y U. de Chile 1-1 U. Católica; empate ordenado por nombre."
+                    text = "Clasificación calculada a partir de los resultados registrados; los empates se ordenan por nombre."
                 )
             }
         }

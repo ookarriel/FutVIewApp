@@ -127,7 +127,7 @@ fun UserMenuScreen(
                 )
                 Spacer(Modifier.height(3.dp))
                 Text(
-                    text = "ana.garcia@correo.com",
+                    text = "",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary
                 )

@@ -36,7 +36,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.futview.data.FutViewData
 import com.example.futview.data.Match
 import com.example.futview.data.Stadium
 import com.example.futview.data.Team
@@ -76,11 +75,12 @@ fun FavoritesScreen(
     var query by rememberSaveable { mutableStateOf("") }
     var type by rememberSaveable { mutableStateOf("Todos") }
 
-    val teams = FutViewData.teams.filter { it.id in favoriteTeamIds }
-    val matches = (FutViewData.upcomingMatches + FutViewData.results)
+    // TODO Fase 3: leer favoritos desde el repositorio de Firestore.
+    val teams = emptyList<Team>().filter { it.id in favoriteTeamIds }
+    val matches = emptyList<Match>()
         .filter { it.id in favoriteMatchIds }
         .sortedWith(compareBy({ it.matchday }, { it.time }))
-    val stadiums = FutViewData.stadiums.filter { it.id in favoriteStadiumIds }
+    val stadiums = emptyList<Stadium>().filter { it.id in favoriteStadiumIds }
 
     val visibleTeams = if (type == "Todos" || type == "Equipos") {
         teams.filter {

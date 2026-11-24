@@ -43,7 +43,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.example.futview.data.FutViewData
+import com.example.futview.data.SystemUser
 import com.example.futview.ui.components.AdminFormActions
 import com.example.futview.ui.components.AdminSectionHeader
 import com.example.futview.ui.components.Avatar
@@ -69,9 +69,9 @@ fun UserFormScreen(
 ) {
     val context = LocalContext.current
 
-    var name by rememberSaveable { mutableStateOf("Camila Morales") }
-    var email by rememberSaveable { mutableStateOf("camila@ejemplo.cl") }
-    var password by rememberSaveable { mutableStateOf("futview2027") }
+    var name by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     var roleIndex by rememberSaveable { mutableStateOf(0) }
 
@@ -99,7 +99,7 @@ fun UserFormScreen(
             item {
                 FormCard(
                     title = "Ficha del usuario",
-                    subtitle = "Registro seleccionado · Camila Morales",
+                    subtitle = "Registro seleccionado",
                     icon = Icons.Outlined.ManageAccounts,
                     modifier = Modifier.padding(horizontal = 20.dp)
                 ) {
@@ -244,7 +244,9 @@ fun UserFormScreen(
                             color = TextSecondary
                         )
                     }
-                    FutViewData.users.forEachIndexed { index, user ->
+                    // TODO Fase 3: leer los usuarios desde el repositorio de Firestore.
+                    val users = emptyList<SystemUser>()
+                    users.forEachIndexed { index, user ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -274,7 +276,7 @@ fun UserFormScreen(
                             }
                             RoleBadge(user.role)
                         }
-                        if (index != FutViewData.users.lastIndex) {
+                        if (index != users.lastIndex) {
                             HorizontalDivider(
                                 modifier = Modifier.padding(horizontal = 14.dp),
                                 color = Border

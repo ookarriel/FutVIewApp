@@ -13,8 +13,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import com.example.futview.data.FutViewData
 import com.example.futview.data.Match
+import com.example.futview.data.Stadium
 import com.example.futview.data.Team
 import com.example.futview.ui.components.AdminBottomBar
 import com.example.futview.ui.components.FutViewBottomBar
@@ -103,9 +103,9 @@ fun FutViewApp() {
     var selectedTeamId by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedStadiumId by rememberSaveable { mutableStateOf<String?>(null) }
 
-    val favoriteTeams = remember { mutableStateListOf("cc", "uch") }
-    val favoriteMatches = remember { mutableStateListOf("m2", "m6") }
-    val favoriteStadiums = remember { mutableStateListOf("monumental") }
+    val favoriteTeams = remember { mutableStateListOf<String>() }
+    val favoriteMatches = remember { mutableStateListOf<String>() }
+    val favoriteStadiums = remember { mutableStateListOf<String>() }
 
     val selectMainTab: (Int) -> Unit = { index ->
         tab = MainTab.entries[index]
@@ -133,14 +133,16 @@ fun FutViewApp() {
         route = Route.STADIUM_DETAIL
     }
     val openMatchStadium: (Match) -> Unit = { match ->
-        val stadium = FutViewData.stadiums.firstOrNull { it.homeTeam == match.home.name }
+        // TODO Fase 3: buscar el estadio desde el repositorio de Firestore.
+        val stadium = emptyList<Stadium>().firstOrNull { it.homeTeam == match.home.name }
         if (stadium != null) {
             selectedStadiumId = stadium.id
             route = Route.STADIUM_DETAIL
         }
     }
     val openTeamStadium: (Team) -> Unit = { team ->
-        val stadium = FutViewData.stadiums.firstOrNull { it.name == team.stadium }
+        // TODO Fase 3: buscar el estadio desde el repositorio de Firestore.
+        val stadium = emptyList<Stadium>().firstOrNull { it.name == team.stadium }
         if (stadium != null) {
             selectedStadiumId = stadium.id
             route = Route.STADIUM_DETAIL
@@ -204,7 +206,7 @@ fun FutViewApp() {
         )
 
         Route.CHECK_EMAIL -> CheckEmailScreen(
-            email = "ana.garcia@correo.com",
+            email = "",
             onBack = { route = Route.RECOVER },
             onResend = {},
             onLogin = { route = Route.LOGIN }
@@ -336,7 +338,7 @@ fun FutViewApp() {
                     subtitle = adminTab.subtitle,
                     onAvatarClick = { route = Route.MENU },
                     userLabel = "Admin",
-                    userInitials = "CM"
+                    userInitials = ""
                 )
 
                 Box(modifier = Modifier.weight(1f)) {
@@ -344,10 +346,7 @@ fun FutViewApp() {
                         AdminTab.EQUIPOS -> ClubFormScreen()
                         AdminTab.ESTADIOS -> StadiumFormScreen()
                         AdminTab.FIXTURE -> MatchFormScreen(
-                            onDelete = {
-                                selectedMatchId = "m2"
-                                route = Route.CONFIRM_DELETE
-                            }
+                            onDelete = { route = Route.CONFIRM_DELETE }
                         )
                         AdminTab.RESULTADOS -> ActaScreen()
                         AdminTab.USUARIOS -> UserFormScreen(
@@ -369,18 +368,21 @@ fun FutViewApp() {
         )
 
         Route.CONFIRM_DELETE -> {
-            val match = FutViewData.upcomingMatches.firstOrNull { it.id == selectedMatchId }
-                ?: FutViewData.upcomingMatches.first()
-            ConfirmDeleteScreen(
-                match = match,
-                onCancel = { route = Route.ADMIN },
-                onConfirm = { route = Route.ADMIN },
-                onSelectTab = selectAdminTab
-            )
+            val match = selectedMatchId?.let { id ->
+                emptyList<Match>().firstOrNull { it.id == id }
+            }
+            if (match != null) {
+                ConfirmDeleteScreen(
+                    match = match,
+                    onCancel = { route = Route.ADMIN },
+                    onConfirm = { route = Route.ADMIN },
+                    onSelectTab = selectAdminTab
+                )
+            }
         }
 
         Route.MATCH_DETAIL -> {
-            val match = FutViewData.upcomingMatches.firstOrNull { it.id == selectedMatchId }
+            val match = emptyList<Match>().firstOrNull { it.id == selectedMatchId }
             if (match != null) {
                 MatchDetailScreen(
                     match = match,
@@ -398,7 +400,7 @@ fun FutViewApp() {
         }
 
         Route.RESULT_DETAIL -> {
-            val match = FutViewData.results.firstOrNull { it.id == selectedMatchId }
+            val match = emptyList<Match>().firstOrNull { it.id == selectedMatchId }
             if (match != null) {
                 ResultDetailScreen(
                     match = match,
@@ -415,7 +417,7 @@ fun FutViewApp() {
         }
 
         Route.TEAM_DETAIL -> {
-            val team = FutViewData.teams.firstOrNull { it.id == selectedTeamId }
+            val team = emptyList<Team>().firstOrNull { it.id == selectedTeamId }
             if (team != null) {
                 TeamDetailScreen(
                     team = team,
@@ -437,7 +439,7 @@ fun FutViewApp() {
         }
 
         Route.STADIUM_DETAIL -> {
-            val stadium = FutViewData.stadiums.firstOrNull { it.id == selectedStadiumId }
+            val stadium = emptyList<Stadium>().firstOrNull { it.id == selectedStadiumId }
             if (stadium != null) {
                 StadiumDetailScreen(
                     stadium = stadium,

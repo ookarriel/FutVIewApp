@@ -66,8 +66,8 @@ fun LoginScreen(
 ) {
     SetStatusBarAppearance(lightIcons = false)
 
-    var email by rememberSaveable { mutableStateOf("ana.garcia@correo.com") }
-    var password by rememberSaveable { mutableStateOf("futview2027") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by rememberSaveable { mutableStateOf("") }
     var rememberSession by rememberSaveable { mutableStateOf(true) }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
 

@@ -272,7 +272,7 @@ fun RecoverAccessScreen(
 ) {
     SetStatusBarAppearance(lightIcons = false)
 
-    var email by rememberSaveable { mutableStateOf("ana.garcia@correo.com") }
+    var email by rememberSaveable { mutableStateOf("") }
 
     Column(
         modifier = Modifier

@@ -27,7 +27,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.futview.data.FutViewData
+import com.example.futview.data.Match
+import com.example.futview.data.StandingRow
 import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.FilterDropdownPill
 import com.example.futview.ui.components.FutViewSearchField
@@ -55,7 +56,9 @@ fun ResultsScreen(
     var season by rememberSaveable { mutableStateOf("Temporada 2027") }
     var matchday by rememberSaveable { mutableStateOf("Jornada 1") }
 
-    val filtered = FutViewData.results.filter { match ->
+    // TODO Fase 3: leer resultados y tabla desde el repositorio de Firestore.
+    val allResults = emptyList<Match>()
+    val filtered = allResults.filter { match ->
         query.isBlank() ||
             match.home.name.contains(query, ignoreCase = true) ||
             match.away.name.contains(query, ignoreCase = true)
@@ -156,7 +159,8 @@ fun ResultsScreen(
 
             item {
                 InfoPill(
-                    text = "2 partidos finalizados · 4 goles",
+                    text = "${allResults.count { it.homeGoals != null }} partidos finalizados · " +
+                        "${allResults.sumOf { (it.homeGoals ?: 0) + (it.awayGoals ?: 0) }} goles",
                     icon = Icons.Outlined.CheckCircle,
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
@@ -164,7 +168,7 @@ fun ResultsScreen(
 
             item {
                 StandingsTable(
-                    rows = FutViewData.standings,
+                    rows = emptyList<StandingRow>(),
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }

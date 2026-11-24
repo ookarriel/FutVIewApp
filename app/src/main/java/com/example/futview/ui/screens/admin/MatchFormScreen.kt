@@ -39,7 +39,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.futview.data.FixtureDay
-import com.example.futview.data.FutViewData
 import com.example.futview.data.Match
 import com.example.futview.ui.components.AdminFormActions
 import com.example.futview.ui.components.AdminSectionHeader
@@ -63,11 +62,11 @@ fun MatchFormScreen(
 ) {
     val context = LocalContext.current
 
-    var date by rememberSaveable { mutableStateOf("19/02/2027") }
-    var time by rememberSaveable { mutableStateOf("18:00") }
-    var stadium by rememberSaveable { mutableStateOf("Monumental") }
-    var homeTeam by rememberSaveable { mutableStateOf("Colo-Colo") }
-    var awayTeam by rememberSaveable { mutableStateOf("Universidad de Chile") }
+    var date by rememberSaveable { mutableStateOf("") }
+    var time by rememberSaveable { mutableStateOf("") }
+    var stadium by rememberSaveable { mutableStateOf("") }
+    var homeTeam by rememberSaveable { mutableStateOf("") }
+    var awayTeam by rememberSaveable { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -131,7 +130,8 @@ fun MatchFormScreen(
                     Spacer(Modifier.height(8.dp))
                     FormDropdown(
                         value = stadium,
-                        options = FutViewData.stadiums.map { it.name },
+                        // TODO Fase 3: opciones desde el repositorio de Firestore.
+                        options = emptyList(),
                         onSelect = { stadium = it }
                     )
 
@@ -141,7 +141,7 @@ fun MatchFormScreen(
                     Spacer(Modifier.height(8.dp))
                     FormDropdown(
                         value = homeTeam,
-                        options = FutViewData.teams.map { it.name },
+                        options = emptyList(),
                         onSelect = { homeTeam = it }
                     )
 
@@ -151,7 +151,7 @@ fun MatchFormScreen(
                     Spacer(Modifier.height(8.dp))
                     FormDropdown(
                         value = awayTeam,
-                        options = FutViewData.teams.map { it.name },
+                        options = emptyList(),
                         onSelect = { awayTeam = it }
                     )
 
@@ -194,7 +194,7 @@ fun MatchFormScreen(
                 )
             }
 
-            items(FutViewData.fixtureDays, key = { it.dateLabel }) { day ->
+            items(emptyList<FixtureDay>(), key = { it.dateLabel }) { day ->
                 FixtureDayCard(
                     day = day,
                     modifier = Modifier.padding(horizontal = 20.dp)

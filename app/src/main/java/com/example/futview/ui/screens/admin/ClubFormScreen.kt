@@ -37,7 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.futview.data.FutViewData
+import com.example.futview.data.Team
 import com.example.futview.ui.components.AdminFormActions
 import com.example.futview.ui.components.AdminSectionHeader
 import com.example.futview.ui.components.Crest
@@ -57,8 +57,8 @@ import com.example.futview.ui.theme.TextSecondary
 fun ClubFormScreen() {
     val context = LocalContext.current
 
-    var name by rememberSaveable { mutableStateOf("Colo-Colo") }
-    var city by rememberSaveable { mutableStateOf("Macul") }
+    var name by rememberSaveable { mutableStateOf("") }
+    var city by rememberSaveable { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -75,7 +75,7 @@ fun ClubFormScreen() {
             item {
                 FormCard(
                     title = "Ficha del club",
-                    subtitle = "Registro seleccionado · Colo-Colo",
+                    subtitle = "Registro seleccionado",
                     icon = Icons.Outlined.Shield,
                     modifier = Modifier.padding(horizontal = 20.dp)
                 ) {
@@ -218,7 +218,9 @@ fun ClubFormScreen() {
                             color = TextSecondary
                         )
                     }
-                    FutViewData.teams.forEachIndexed { index, team ->
+                    // TODO Fase 3: leer los clubes desde el repositorio de Firestore.
+                    val teams = emptyList<Team>()
+                    teams.forEachIndexed { index, team ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -248,7 +250,7 @@ fun ClubFormScreen() {
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
-                        if (index != FutViewData.teams.lastIndex) {
+                        if (index != teams.lastIndex) {
                             HorizontalDivider(
                                 modifier = Modifier.padding(horizontal = 14.dp),
                                 color = Border
@@ -260,7 +262,7 @@ fun ClubFormScreen() {
 
             item {
                 InfoNote(
-                    text = "Colo-Colo está seleccionado para editar. Los escudos son ilustrativos."
+                    text = "Selecciona un club de la lista para editarlo. Los escudos son ilustrativos."
                 )
             }
         }

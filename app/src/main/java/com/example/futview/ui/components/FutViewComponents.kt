@@ -336,7 +336,7 @@ fun DemoBanner(modifier: Modifier = Modifier) {
         )
         Spacer(Modifier.width(8.dp))
         Text(
-            text = "Datos de demostración · No oficiales",
+            text = "Sin datos cargados · La conexión a Firestore está pendiente",
             style = MaterialTheme.typography.bodySmall,
             color = TextSecondary
         )

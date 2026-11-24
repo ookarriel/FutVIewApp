@@ -36,7 +36,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.futview.data.FutViewData
 import com.example.futview.data.Team
 import com.example.futview.ui.components.Crest
 import com.example.futview.ui.components.DemoBanner
@@ -69,7 +68,8 @@ fun TeamsScreen(
     var filter by rememberSaveable { mutableStateOf("Todos") }
     var city by rememberSaveable { mutableStateOf("Todas las ciudades") }
 
-    val filtered = FutViewData.teams.filter { team ->
+    // TODO Fase 3: leer los equipos desde el repositorio de Firestore.
+    val filtered = emptyList<Team>().filter { team ->
         val matchesFilter = filter != "Mis equipos" || team.id in favoriteTeamIds
         val matchesCity = city == "Todas las ciudades" || team.city == city
         val matchesQuery = query.isBlank() ||
@@ -125,12 +125,7 @@ fun TeamsScreen(
                     )
                     FilterDropdownPill(
                         label = if (city == "Todas las ciudades") "Ciudad" else city,
-                        options = listOf(
-                            "Todas las ciudades",
-                            "Macul",
-                            "La Cisterna",
-                            "Santiago"
-                        ),
+                        options = listOf("Todas las ciudades"),
                         onSelect = { city = it }
                     )
                 }

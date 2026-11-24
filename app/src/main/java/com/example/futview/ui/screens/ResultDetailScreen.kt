@@ -20,8 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.futview.data.FutViewData
 import com.example.futview.data.Match
+import com.example.futview.data.StandingRow
 import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.DetailField
 import com.example.futview.ui.components.FutViewBottomBar
@@ -138,7 +138,8 @@ fun ResultDetailScreen(
 
             item {
                 StandingsTable(
-                    rows = FutViewData.standings,
+                    // TODO Fase 3: leer la tabla desde el repositorio de Firestore.
+                    rows = emptyList<StandingRow>(),
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }

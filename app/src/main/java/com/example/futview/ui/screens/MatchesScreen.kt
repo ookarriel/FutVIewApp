@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.futview.data.FutViewData
 import com.example.futview.data.Match
 import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.FilterDropdownPill
@@ -54,7 +53,8 @@ fun MatchesScreen(
     var month by rememberSaveable { mutableStateOf("Febrero 2027") }
     var filter by rememberSaveable { mutableStateOf("Todos") }
 
-    val filtered = FutViewData.upcomingMatches.filter { match ->
+    // TODO Fase 3: leer los partidos desde el repositorio de Firestore.
+    val filtered = emptyList<Match>().filter { match ->
         val matchesFilter = filter != "Mis equipos" ||
             match.home.id in favoriteTeamIds ||
             match.away.id in favoriteTeamIds

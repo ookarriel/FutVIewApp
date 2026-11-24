@@ -38,7 +38,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.futview.data.FutViewData
+import com.example.futview.data.Stadium
 import com.example.futview.ui.components.AdminFormActions
 import com.example.futview.ui.components.AdminSectionHeader
 import com.example.futview.ui.components.DemoBanner
@@ -58,11 +58,11 @@ import com.example.futview.ui.util.formatThousands
 fun StadiumFormScreen() {
     val context = LocalContext.current
 
-    var name by rememberSaveable { mutableStateOf("Monumental") }
-    var address by rememberSaveable { mutableStateOf("Av. Marathon 5300, Macul") }
-    var capacity by rememberSaveable { mutableStateOf("47347") }
-    var latitude by rememberSaveable { mutableStateOf("-33.5066") }
-    var longitude by rememberSaveable { mutableStateOf("-70.6054") }
+    var name by rememberSaveable { mutableStateOf("") }
+    var address by rememberSaveable { mutableStateOf("") }
+    var capacity by rememberSaveable { mutableStateOf("") }
+    var latitude by rememberSaveable { mutableStateOf("") }
+    var longitude by rememberSaveable { mutableStateOf("") }
     var enabled by rememberSaveable { mutableStateOf(true) }
 
     Column(
@@ -255,7 +255,9 @@ fun StadiumFormScreen() {
                             color = TextSecondary
                         )
                     }
-                    FutViewData.stadiums.forEachIndexed { index, stadium ->
+                    // TODO Fase 3: leer los estadios desde el repositorio de Firestore.
+                    val stadiums = emptyList<Stadium>()
+                    stadiums.forEachIndexed { index, stadium ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -282,7 +284,7 @@ fun StadiumFormScreen() {
                                 color = TextPrimary
                             )
                         }
-                        if (index != FutViewData.stadiums.lastIndex) {
+                        if (index != stadiums.lastIndex) {
                             HorizontalDivider(
                                 modifier = Modifier.padding(horizontal = 14.dp),
                                 color = Border

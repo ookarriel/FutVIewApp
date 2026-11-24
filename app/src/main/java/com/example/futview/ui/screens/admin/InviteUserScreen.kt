@@ -64,7 +64,7 @@ fun InviteUserScreen(
             onAvatarClick = onBack,
             onBack = onBack,
             userLabel = "Admin",
-            userInitials = "CM"
+            userInitials = ""
         )
 
         LazyColumn(

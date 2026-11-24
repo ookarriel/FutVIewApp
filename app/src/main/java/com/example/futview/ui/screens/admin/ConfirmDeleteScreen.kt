@@ -58,7 +58,7 @@ fun ConfirmDeleteScreen(
             onAvatarClick = onCancel,
             onBack = onCancel,
             userLabel = "Admin",
-            userInitials = "CM"
+            userInitials = ""
         )
 
         LazyColumn(

@@ -27,7 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.futview.data.FutViewData
+import com.example.futview.data.Match
 import com.example.futview.data.Team
 import com.example.futview.ui.components.Crest
 import com.example.futview.ui.components.DemoBanner
@@ -62,10 +62,11 @@ fun TeamDetailScreen(
 ) {
     SetStatusBarAppearance(lightIcons = true)
 
-    val nextMatch = FutViewData.upcomingMatches.firstOrNull {
+    // TODO Fase 3: leer los partidos del equipo desde el repositorio de Firestore.
+    val nextMatch = emptyList<Match>().firstOrNull {
         it.home.id == team.id || it.away.id == team.id
     }
-    val lastResult = FutViewData.results.firstOrNull {
+    val lastResult = emptyList<Match>().firstOrNull {
         it.home.id == team.id || it.away.id == team.id
     }
 

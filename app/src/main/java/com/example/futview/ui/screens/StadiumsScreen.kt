@@ -37,7 +37,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.futview.data.FutViewData
 import com.example.futview.data.Stadium
 import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.FilterDropdownPill
@@ -68,7 +67,8 @@ fun StadiumsScreen(
     var filter by rememberSaveable { mutableStateOf("Todas") }
     var city by rememberSaveable { mutableStateOf("Todas las comunas") }
 
-    val filtered = FutViewData.stadiums.filter { stadium ->
+    // TODO Fase 3: leer los estadios desde el repositorio de Firestore.
+    val filtered = emptyList<Stadium>().filter { stadium ->
         val matchesFilter = filter != "Mis estadios" || stadium.id in favoriteStadiumIds
         val matchesCity = city == "Todas las comunas" || stadium.city == city
         val matchesQuery = query.isBlank() ||
@@ -114,13 +114,7 @@ fun StadiumsScreen(
                 ) {
                     FilterDropdownPill(
                         label = city,
-                        options = listOf(
-                            "Todas las comunas",
-                            "Macul",
-                            "Ñuñoa",
-                            "La Cisterna",
-                            "Independencia"
-                        ),
+                        options = listOf("Todas las comunas"),
                         onSelect = { city = it },
                         selected = true
                     )

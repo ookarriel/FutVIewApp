@@ -74,8 +74,8 @@ fun ProfileScreen(
 ) {
     SetStatusBarAppearance(lightIcons = true)
 
-    var name by rememberSaveable { mutableStateOf("Ana García") }
-    var email by rememberSaveable { mutableStateOf("ana.garcia@correo.com") }
+    var name by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -161,13 +161,13 @@ fun ProfileScreen(
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = "2 equipos · 2 partidos · 1 estadio",
+                        text = "0 equipos · 0 partidos · 0 estadios",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        text = "Colo-Colo y Universidad de Chile están entre tus favoritos.",
+                        text = "Aún no sigues favoritos. Explora equipos, partidos y estadios para seguir tu fútbol.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextPrimary
                     )
@@ -403,30 +403,6 @@ fun NotificationsScreen(
 
             item {
                 NotificationCard(
-                    icon = Icons.Outlined.CalendarMonth,
-                    meta = "NUEVA · 19 FEB · 17:30",
-                    title = "Hoy juega Colo-Colo",
-                    body = "Colo-Colo vs. U. de Chile comienza a las 18:00 en el Monumental.",
-                    action = "Ver partido",
-                    onClick = onViewMatch,
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
-            }
-
-            item {
-                NotificationCard(
-                    icon = Icons.Outlined.EmojiEvents,
-                    meta = "NUEVA · 12 FEB · 20:00",
-                    title = "Victoria de Colo-Colo",
-                    body = "Colo-Colo 2–0 Palestino. Consulta el resultado y la tabla actualizada.",
-                    action = "Ver resultado",
-                    onClick = onViewResult,
-                    modifier = Modifier.padding(horizontal = 20.dp)
-                )
-            }
-
-            item {
-                NotificationCard(
                     icon = Icons.Outlined.StarBorder,
                     meta = "NUEVA · 12 FEB · 10:00",
                     title = "Tu fútbol, a tu manera",
@@ -547,7 +523,7 @@ fun ContactSupportScreen(
 ) {
     SetStatusBarAppearance(lightIcons = true)
 
-    var email by rememberSaveable { mutableStateOf("ana.garcia@correo.com") }
+    var email by rememberSaveable { mutableStateOf("") }
     var reason by rememberSaveable { mutableStateOf("Problema con mi cuenta") }
     var subject by rememberSaveable { mutableStateOf("") }
     var message by rememberSaveable { mutableStateOf("") }

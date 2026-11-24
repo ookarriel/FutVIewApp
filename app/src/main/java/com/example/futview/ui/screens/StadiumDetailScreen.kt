@@ -29,7 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.example.futview.data.FutViewData
+import com.example.futview.data.Match
 import com.example.futview.data.Stadium
 import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.DetailField
@@ -60,7 +60,8 @@ fun StadiumDetailScreen(
 ) {
     SetStatusBarAppearance(lightIcons = true)
 
-    val nextMatch = FutViewData.upcomingMatches.firstOrNull {
+    // TODO Fase 3: leer los partidos del estadio desde el repositorio de Firestore.
+    val nextMatch = emptyList<Match>().firstOrNull {
         it.stadium.startsWith(stadium.name)
     }
 
