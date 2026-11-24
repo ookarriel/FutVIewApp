@@ -40,12 +40,12 @@ class FirestoreSeedRepository {
             val stadiumId = existingStadium?.first ?: stadiumSlug
             batch.set(
                 db.collection("stadiums").document(stadiumId),
-                StadiumDoc(
-                    name = club.stadiumName,
-                    city = club.city,
-                    capacity = club.capacity.toLong(),
-                    address = club.stadiumAddress,
-                    location = GeoPoint(club.latitude, club.longitude)
+                mapOf(
+                    "name" to club.stadiumName,
+                    "city" to club.city,
+                    "capacity" to club.capacity.toLong(),
+                    "address" to club.stadiumAddress,
+                    "location" to GeoPoint(club.latitude, club.longitude)
                 ),
                 SetOptions.merge()
             )
