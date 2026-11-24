@@ -75,9 +75,14 @@ fun TeamsScreen(
     val viewModel: TeamsViewModel = viewModel(factory = TeamsViewModel.Factory)
     val teamsState by viewModel.teams.collectAsStateWithLifecycle()
 
-    val filtered = (teamsState as? UiState.Success)?.data.orEmpty().filter { team ->
+    val allTeams = (teamsState as? UiState.Success)?.data.orEmpty()
+    val cityOptions = listOf("Todas las ciudades") +
+        allTeams.map { it.city }.filter { it.isNotBlank() }.distinct().sorted()
+    // Si la ciudad guardada ya no existe en los datos, se vuelve a "Todas las ciudades".
+    val activeCity = if (city in cityOptions) city else "Todas las ciudades"
+    val filtered = allTeams.filter { team ->
         val matchesFilter = filter != "Mis equipos" || team.id in favoriteTeamIds
-        val matchesCity = city == "Todas las ciudades" || team.city == city
+        val matchesCity = activeCity == "Todas las ciudades" || team.city == activeCity
         val matchesQuery = query.isBlank() ||
             team.name.contains(query, ignoreCase = true) ||
             team.city.contains(query, ignoreCase = true)
@@ -135,8 +140,8 @@ fun TeamsScreen(
                         onClick = { filter = "Mis equipos" }
                     )
                     FilterDropdownPill(
-                        label = if (city == "Todas las ciudades") "Ciudad" else city,
-                        options = listOf("Todas las ciudades"),
+                        label = if (activeCity == "Todas las ciudades") "Ciudad" else activeCity,
+                        options = cityOptions,
                         onSelect = { city = it }
                     )
                 }

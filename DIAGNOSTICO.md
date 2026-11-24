@@ -170,12 +170,15 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - **API-Football eliminada** (código y clave): su plan gratuito solo sirve temporadas 2021–2023, por lo que no podía alimentar la temporada 2026.
 - [x] La tabla de posiciones se lee de `standings/2026` (ESPN); el respaldo manual de Wikipedia fue eliminado.
 
-### Fase 5 — Pulido y release
+### Fase 5 — Pulido y release 🔄 EN CURSO
 - [x] Dataset completo del fútbol chileno (Liga de Primera 2026) desde ESPN: 16 clubes, 240 partidos y tabla oficial.
 - [x] Limpieza de UI: eliminados `DemoBanner` y textos de mockup/demostración; cabeceras muestran el usuario real; menú reducido a modo oscuro, administración/estado y cierre de sesión.
 - [x] Modo oscuro persistente con `SharedPreferences`, paleta dinámica y controles compatibles.
 - [x] Pantalla de resultados ordenada del más reciente al más antiguo (fecha + hora de kickoff).
-- [ ] Tests básicos, README decente, icono de app, `applicationId` final.
+- [x] Filtros de comuna/ciudad funcionales en Estadios y Equipos (opciones derivadas de los datos).
+- [x] Notas de sincronización, chips de estadísticas y dashboard "Estado del sistema" eliminados; código heredado de Wikipedia fuera.
+- [x] Tests básicos y README decente (Fase 5).
+- [ ] Icono de app, `applicationId` final (requiere registrar el package en Firebase) y keystore de release.
 - [ ] Build release con minify y verificación.
 
 ---
@@ -198,3 +201,4 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 | 24-nov-2026 | **"ÚLTIMO" y "PRÓXIMO PARTIDO" con datos reales**: `lastResult`/`nextMatch` de equipos y estadios se calculan desde `matches` (`data/ActivityResult.kt`); tarjetas de Equipos, Estadios, Favoritos y detalles muestran resúmenes ("Ganó 2-1 a X · 21 nov", "vs Y · 28 nov · 18:00") o "Por confirmar" si no hay datos. Build debug OK, instalada en dispositivo sin crashes. |
 | 24-nov-2026 | **Resultados: orden y paginación**: corregido el parseo de `dayLabel` (era case-sensitive y toda fecha caía a `MIN`, ordenando como si fuera agosto); la lista ahora ordena de verdad por fecha+hora descendente. Paginado de 5 en 5 con botón "Ver más" y encabezado de fecha por grupo; la tabla de posiciones queda a pocos scrolls del inicio. Build debug OK, instalada en dispositivo sin crashes. |
 | 24-nov-2026 | **Limpieza de notas y dashboards**: eliminados `InfoNote`/`InfoPill` y todas sus apariciones (notas de sincronización, "actualiza desde el panel", chips de estadísticas), el dashboard "Estado del sistema" (`AdminStatusScreen` + ruta + ítem de menú) y el código heredado del respaldo de Wikipedia (`WikipediaSyncViewModel`, `WikipediaStandingsRepository`, botón en Acta). Textos mockup del Acta ("Simulación de la jornada 1", "Vista previa") corregidos. Build debug OK. |
+| 24-nov-2026 | **Filtro de comuna/ciudad funcional**: Estadios y Equipos ahora llenan el dropdown con las comunas/ciudades reales de los datos (antes tenía una única opción fija y nunca filtraba); si la ciudad guardada desaparece, vuelve a "Todas". Eliminado el rótulo duplicado "Sedes de la competición". Build debug OK, instalada en dispositivo sin crashes. **Fase 5 iniciada.** |

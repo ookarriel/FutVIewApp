@@ -74,9 +74,14 @@ fun StadiumsScreen(
     val viewModel: StadiumsViewModel = viewModel(factory = StadiumsViewModel.Factory)
     val stadiumsState by viewModel.stadiums.collectAsStateWithLifecycle()
 
-    val filtered = (stadiumsState as? UiState.Success)?.data.orEmpty().filter { stadium ->
+    val allStadiums = (stadiumsState as? UiState.Success)?.data.orEmpty()
+    val cityOptions = listOf("Todas las comunas") +
+        allStadiums.map { it.city }.filter { it.isNotBlank() }.distinct().sorted()
+    // Si la comuna guardada ya no existe en los datos, se vuelve a "Todas las comunas".
+    val activeCity = if (city in cityOptions) city else "Todas las comunas"
+    val filtered = allStadiums.filter { stadium ->
         val matchesFilter = filter != "Mis estadios" || stadium.id in favoriteStadiumIds
-        val matchesCity = city == "Todas las comunas" || stadium.city == city
+        val matchesCity = activeCity == "Todas las comunas" || stadium.city == activeCity
         val matchesQuery = query.isBlank() ||
             stadium.name.contains(query, ignoreCase = true) ||
             stadium.city.contains(query, ignoreCase = true)
@@ -124,10 +129,10 @@ fun StadiumsScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     FilterDropdownPill(
-                        label = city,
-                        options = listOf("Todas las comunas"),
+                        label = if (activeCity == "Todas las comunas") "Comuna" else activeCity,
+                        options = cityOptions,
                         onSelect = { city = it },
-                        selected = true
+                        selected = activeCity != "Todas las comunas"
                     )
                     FilterPill(
                         label = "Mis estadios",
@@ -143,15 +148,6 @@ fun StadiumsScreen(
                 SectionHeader(
                     title = "Sedes de la competición",
                     trailing = "${filtered.size} estadios"
-                )
-            }
-
-            item {
-                Text(
-                    text = "Sedes de la competición",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary,
-                    modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
 
