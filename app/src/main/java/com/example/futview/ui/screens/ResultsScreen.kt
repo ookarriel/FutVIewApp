@@ -48,20 +48,7 @@ import com.example.futview.ui.components.StandingsTable
 import com.example.futview.ui.theme.Page
 import com.example.futview.ui.theme.TextPrimary
 import com.example.futview.ui.theme.TextSecondary
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Locale
-
-/** Formato de `dayLabel` escrito por la sincronización ESPN y los formularios admin. */
-private val dayLabelFormatter: DateTimeFormatter =
-    DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM 'de' yyyy", Locale("es", "CL"))
-
-/** Fecha del partido a partir de `dayLabel`; `LocalDate.MIN` si no se puede interpretar. */
-private fun Match.resultDate(): LocalDate = try {
-    LocalDate.parse(dayLabel, dayLabelFormatter)
-} catch (_: Exception) {
-    LocalDate.MIN
-}
+import com.example.futview.data.kickoffDate
 
 @Composable
 fun ResultsScreen(
@@ -90,7 +77,7 @@ fun ResultsScreen(
                 match.away.name.contains(query, ignoreCase = true)
         }
         .sortedWith(
-            compareByDescending<Match> { it.resultDate() }
+            compareByDescending<Match> { it.kickoffDate() }
                 .thenByDescending { it.time }
                 .thenByDescending { it.matchday }
                 .thenBy { it.home.name }

@@ -350,7 +350,11 @@ private fun FavoriteTeamRow(
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                text = "Próximo: ${team.nextMatch}",
+                text = if (team.nextMatch.isBlank()) {
+                    "Sin próximo partido programado"
+                } else {
+                    "Próximo: ${team.nextMatch}"
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = TextSecondary,
                 maxLines = 1,

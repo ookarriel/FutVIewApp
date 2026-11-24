@@ -280,7 +280,7 @@ private fun StadiumCard(
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = stadium.nextMatch,
+                text = stadium.nextMatch.ifBlank { "Por confirmar" },
                 style = MaterialTheme.typography.bodySmall,
                 color = TextPrimary
             )

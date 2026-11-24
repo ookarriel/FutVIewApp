@@ -28,6 +28,11 @@ import com.example.futview.data.Match
 import com.example.futview.data.Stadium
 import com.example.futview.data.Team
 import com.example.futview.data.model.initialsOf
+import com.example.futview.data.fixtureSummary
+import com.example.futview.data.nextMatchForStadium
+import com.example.futview.data.nextMatchForTeam
+import com.example.futview.data.recentResultFor
+import com.example.futview.data.resultSummary
 import com.example.futview.ui.viewmodel.EspnSyncViewModel
 import com.example.futview.ui.viewmodel.AuthStateViewModel
 import com.example.futview.ui.viewmodel.UiState
@@ -577,13 +582,16 @@ fun FutViewApp(
                 val team = teams.firstOrNull { it.id == selectedTeamId }
                 if (team != null) {
                     TeamDetailScreen(
-                        team = team,
-                        nextMatch = upcomingMatches.firstOrNull {
-                            it.home.id == team.id || it.away.id == team.id
-                        },
-                        lastResult = results.firstOrNull {
-                            it.home.id == team.id || it.away.id == team.id
-                        },
+                        team = team.copy(
+                            lastResult = recentResultFor(team.id, results)
+                                ?.let { resultSummary(it, team.id) }
+                                .orEmpty(),
+                            nextMatch = nextMatchForTeam(team.id, upcomingMatches)
+                                ?.let { fixtureSummary(it, team.id) }
+                                .orEmpty()
+                        ),
+                        nextMatch = nextMatchForTeam(team.id, upcomingMatches),
+                        lastResult = recentResultFor(team.id, results),
                         favorite = team.id in favoriteTeams,
                         onToggleFavorite = { toggleTeamFavorite(team.id) },
                         favoriteMatchIds = favoriteMatches,
@@ -605,10 +613,12 @@ fun FutViewApp(
                 val stadium = stadiums.firstOrNull { it.id == selectedStadiumId }
                 if (stadium != null) {
                     StadiumDetailScreen(
-                        stadium = stadium,
-                        nextMatch = upcomingMatches.firstOrNull {
-                            it.stadium.startsWith(stadium.name)
-                        },
+                        stadium = stadium.copy(
+                            nextMatch = nextMatchForStadium(stadium.name, upcomingMatches)
+                                ?.let { fixtureSummary(it) }
+                                .orEmpty()
+                        ),
+                        nextMatch = nextMatchForStadium(stadium.name, upcomingMatches),
                         favorite = stadium.id in favoriteStadiums,
                         onToggleFavorite = { toggleStadiumFavorite(stadium.id) },
                         favoriteMatchIds = favoriteMatches,

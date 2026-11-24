@@ -282,7 +282,7 @@ private fun TeamCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = team.nextMatch,
+                text = team.nextMatch.ifBlank { "Por confirmar" },
                 style = MaterialTheme.typography.bodySmall,
                 color = TextPrimary,
                 modifier = Modifier.weight(1f)

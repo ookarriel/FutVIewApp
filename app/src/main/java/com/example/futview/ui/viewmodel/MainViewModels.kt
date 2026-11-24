@@ -13,6 +13,8 @@ import com.example.futview.data.repository.FavoritesRepository
 import com.example.futview.data.repository.MatchRepository
 import com.example.futview.data.repository.StadiumRepository
 import com.example.futview.data.repository.TeamRepository
+import com.example.futview.data.withActivityResult
+import com.example.futview.data.withNextMatch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -68,11 +70,22 @@ class ResultsViewModel(matchRepository: MatchRepository) : ViewModel() {
 }
 
 /** ViewModel de la pestaña Equipos. */
-class TeamsViewModel(teamRepository: TeamRepository) : ViewModel() {
+class TeamsViewModel(
+    teamRepository: TeamRepository,
+    matchRepository: MatchRepository
+) : ViewModel() {
     private val retryTrigger = MutableStateFlow(0)
 
     val teams: StateFlow<UiState<List<Team>>> = retryTrigger
-        .flatMapLatest { teamRepository.observeTeams().toUiState() }
+        .flatMapLatest {
+            combine(
+                teamRepository.observeTeams(),
+                matchRepository.observeResults(),
+                matchRepository.observeUpcomingMatches()
+            ) { teams, results, upcoming ->
+                teams.withActivityResult(results, upcoming)
+            }.toUiState()
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), UiState.Loading)
 
     fun retry() {
@@ -81,17 +94,29 @@ class TeamsViewModel(teamRepository: TeamRepository) : ViewModel() {
 
     companion object {
         val Factory = viewModelFactory {
-            initializer { TeamsViewModel(AppContainer.teamRepository) }
+            initializer {
+                TeamsViewModel(AppContainer.teamRepository, AppContainer.matchRepository)
+            }
         }
     }
 }
 
 /** ViewModel de la pestaña Estadios. */
-class StadiumsViewModel(stadiumRepository: StadiumRepository) : ViewModel() {
+class StadiumsViewModel(
+    stadiumRepository: StadiumRepository,
+    matchRepository: MatchRepository
+) : ViewModel() {
     private val retryTrigger = MutableStateFlow(0)
 
     val stadiums: StateFlow<UiState<List<Stadium>>> = retryTrigger
-        .flatMapLatest { stadiumRepository.observeStadiums().toUiState() }
+        .flatMapLatest {
+            combine(
+                stadiumRepository.observeStadiums(),
+                matchRepository.observeUpcomingMatches()
+            ) { stadiums, upcoming ->
+                stadiums.withNextMatch(upcoming)
+            }.toUiState()
+        }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), UiState.Loading)
 
     fun retry() {
@@ -100,7 +125,9 @@ class StadiumsViewModel(stadiumRepository: StadiumRepository) : ViewModel() {
 
     companion object {
         val Factory = viewModelFactory {
-            initializer { StadiumsViewModel(AppContainer.stadiumRepository) }
+            initializer {
+                StadiumsViewModel(AppContainer.stadiumRepository, AppContainer.matchRepository)
+            }
         }
     }
 }
@@ -128,7 +155,11 @@ class FavoritesViewModel(
                 matchRepository.observeResults(),
                 stadiumRepository.observeStadiums()
             ) { teams, upcoming, results, stadiums ->
-                FavoritesUiData(teams = teams, matches = upcoming + results, stadiums = stadiums)
+                FavoritesUiData(
+                    teams = teams.withActivityResult(results, upcoming),
+                    matches = upcoming + results,
+                    stadiums = stadiums
+                )
             }.toUiState()
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), UiState.Loading)

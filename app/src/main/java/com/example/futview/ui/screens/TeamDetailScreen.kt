@@ -148,7 +148,7 @@ fun TeamDetailScreen(
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            text = team.lastResult,
+                            text = team.lastResult.ifBlank { "Aún sin partidos" },
                             style = MaterialTheme.typography.titleSmall,
                             color = TextPrimary
                         )
@@ -165,7 +165,7 @@ fun TeamDetailScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = team.nextMatch,
+                            text = team.nextMatch.ifBlank { "Por confirmar" },
                             style = MaterialTheme.typography.bodySmall,
                             color = TextPrimary,
                             modifier = Modifier.weight(1f)
