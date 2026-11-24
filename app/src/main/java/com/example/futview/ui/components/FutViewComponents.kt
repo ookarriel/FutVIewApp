@@ -43,7 +43,6 @@ import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material.icons.outlined.People
 import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.outlined.Save
-import androidx.compose.material.icons.outlined.Science
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.StarBorder
@@ -216,10 +215,9 @@ fun Avatar(
 @Composable
 fun FutViewTopBar(
     onAvatarClick: () -> Unit,
-    onBack: (() -> Unit)? = null,
-    userLabel: String = "Ana",
-    userInitials: String = "AG"
+    onBack: (() -> Unit)? = null
 ) {
+    val userIdentity = LocalUserIdentity.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -257,13 +255,13 @@ fun FutViewTopBar(
         Spacer(Modifier.weight(1f))
 
         Text(
-            text = userLabel,
+            text = userIdentity.displayName,
             style = MaterialTheme.typography.bodyMedium,
             color = TextOnDarkMuted
         )
         Spacer(Modifier.width(8.dp))
         Box(modifier = Modifier.clickable(onClick = onAvatarClick)) {
-            Avatar(initials = userInitials)
+            Avatar(initials = userIdentity.initials)
         }
     }
 }
@@ -274,9 +272,7 @@ fun ScreenHeader(
     title: String,
     subtitle: String,
     onAvatarClick: () -> Unit,
-    onBack: (() -> Unit)? = null,
-    userLabel: String = "Ana",
-    userInitials: String = "AG"
+    onBack: (() -> Unit)? = null
 ) {
     Column(
         modifier = Modifier
@@ -286,9 +282,7 @@ fun ScreenHeader(
     ) {
         FutViewTopBar(
             onAvatarClick = onAvatarClick,
-            onBack = onBack,
-            userLabel = userLabel,
-            userInitials = userInitials
+            onBack = onBack
         )
         Column(modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 22.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -323,29 +317,6 @@ fun ScreenHeader(
 }
 
 @Composable
-fun DemoBanner(modifier: Modifier = Modifier) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = Icons.Outlined.Science,
-            contentDescription = null,
-            tint = TextSecondary,
-            modifier = Modifier.size(16.dp)
-        )
-        Spacer(Modifier.width(8.dp))
-        Text(
-            text = "Sincronizado con Firestore en tiempo real",
-            style = MaterialTheme.typography.bodySmall,
-            color = TextSecondary
-        )
-    }
-}
-
-@Composable
 fun FutViewSearchField(
     value: String,
     onValueChange: (String) -> Unit,
@@ -357,7 +328,7 @@ fun FutViewSearchField(
         onValueChange = onValueChange,
         singleLine = true,
         textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextPrimary),
-        cursorBrush = SolidColor(Ink),
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         modifier = modifier
             .fillMaxWidth()
             .height(52.dp)
@@ -419,10 +390,10 @@ fun FilterPill(
         modifier = Modifier
             .height(40.dp)
             .clip(RoundedCornerShape(50))
-            .background(if (selected) Ink else Card)
+            .background(if (selected) MaterialTheme.colorScheme.primary else Card)
             .border(
                 width = 1.dp,
-                color = if (selected) Ink else Border,
+                color = if (selected) MaterialTheme.colorScheme.primary else Border,
                 shape = RoundedCornerShape(50)
             )
             .clickable(onClick = onClick)
@@ -432,7 +403,7 @@ fun FilterPill(
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
-            color = if (selected) Color.White else TextPrimary,
+            color = if (selected) MaterialTheme.colorScheme.onPrimary else TextPrimary,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium
         )
         if (trailingIcon) {
@@ -440,7 +411,7 @@ fun FilterPill(
             Icon(
                 imageVector = Icons.Outlined.KeyboardArrowDown,
                 contentDescription = null,
-                tint = if (selected) Color.White else TextSecondary,
+                tint = if (selected) MaterialTheme.colorScheme.onPrimary else TextSecondary,
                 modifier = Modifier.size(18.dp)
             )
         }
@@ -518,14 +489,14 @@ fun StarToggle(
         modifier = modifier
             .size(36.dp)
             .clip(RoundedCornerShape(10.dp))
-            .background(if (selected) Ink else Color.Transparent)
+            .background(if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
             .clickable(onClick = onToggle),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = if (selected) Icons.Filled.Star else Icons.Outlined.StarBorder,
             contentDescription = if (selected) "Quitar de favoritos" else "Agregar a favoritos",
-            tint = if (selected) Color.White else TextTertiary,
+            tint = if (selected) MaterialTheme.colorScheme.onPrimary else TextTertiary,
             modifier = Modifier.size(22.dp)
         )
     }
@@ -1046,7 +1017,7 @@ fun FormTextField(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent,
-            cursorColor = Ink,
+            cursorColor = MaterialTheme.colorScheme.primary,
             focusedTextColor = TextPrimary,
             unfocusedTextColor = TextPrimary,
             disabledTextColor = TextPrimary
@@ -1122,10 +1093,10 @@ fun PrimaryButton(
             .height(52.dp),
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Ink,
-            contentColor = Color.White,
-            disabledContainerColor = Ink.copy(alpha = 0.4f),
-            disabledContentColor = Color.White
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+            disabledContentColor = MaterialTheme.colorScheme.onPrimary
         ),
         contentPadding = PaddingValues(horizontal = 16.dp)
     ) {
@@ -1200,14 +1171,14 @@ fun SegmentedControl(
                     .weight(1f)
                     .height(40.dp)
                     .clip(RoundedCornerShape(9.dp))
-                    .background(if (selected) Ink else Color.Transparent)
+                    .background(if (selected) MaterialTheme.colorScheme.primary else Color.Transparent)
                     .clickable { onSelect(index) },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = option,
                     style = MaterialTheme.typography.titleSmall,
-                    color = if (selected) Color.White else TextSecondary,
+                    color = if (selected) MaterialTheme.colorScheme.onPrimary else TextSecondary,
                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium
                 )
             }
@@ -1267,12 +1238,12 @@ fun AdminTopBar(
         )
         Spacer(Modifier.weight(1f))
         Text(
-            text = "Admin",
+            text = LocalUserIdentity.current.displayName,
             style = MaterialTheme.typography.labelMedium,
             color = TextSecondary
         )
         Spacer(Modifier.width(8.dp))
-        Avatar(initials = "AG", size = 32)
+        Avatar(initials = LocalUserIdentity.current.initials, size = 32)
     }
     HorizontalDivider(color = Border)
 }
@@ -1540,7 +1511,7 @@ fun ToggleRow(
                 .width(46.dp)
                 .height(26.dp)
                 .clip(RoundedCornerShape(50))
-                .background(if (enabled) Ink else FieldStrong),
+                .background(if (enabled) MaterialTheme.colorScheme.primary else FieldStrong),
             contentAlignment = if (enabled) Alignment.CenterEnd else Alignment.CenterStart
         ) {
             Box(
@@ -1548,7 +1519,7 @@ fun ToggleRow(
                     .padding(3.dp)
                     .size(20.dp)
                     .clip(CircleShape)
-                    .background(Color.White)
+                    .background(if (enabled) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.surface)
             )
         }
     }

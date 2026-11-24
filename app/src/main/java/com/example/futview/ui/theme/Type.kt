@@ -8,7 +8,7 @@ import androidx.compose.ui.unit.sp
 
 private val Sans = FontFamily.SansSerif
 
-/** Tipografía compacta y geométrica inspirada en los mockups. */
+/** Tipografía compacta y geométrica. */
 val FutViewTypography = Typography(
     displayLarge = TextStyle(
         fontFamily = Sans,

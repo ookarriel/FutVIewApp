@@ -60,6 +60,7 @@ import com.example.futview.ui.components.SetStatusBarAppearance
 import com.example.futview.ui.theme.Card
 import com.example.futview.ui.theme.Field
 import com.example.futview.ui.theme.Ink
+import com.example.futview.ui.theme.IsDarkTheme
 import com.example.futview.ui.theme.Page
 import com.example.futview.ui.theme.TextPrimary
 import com.example.futview.ui.theme.TextSecondary
@@ -125,7 +126,7 @@ fun SignUpScreen(
     onLogin: () -> Unit,
     onRegistered: (String) -> Unit
 ) {
-    SetStatusBarAppearance(lightIcons = false)
+    SetStatusBarAppearance(lightIcons = IsDarkTheme)
 
     val viewModel: SignUpViewModel = viewModel(factory = SignUpViewModel.Factory)
     val busy by viewModel.busy.collectAsStateWithLifecycle()
@@ -173,7 +174,7 @@ fun SignUpScreen(
             FormTextField(
                 value = name,
                 onValueChange = { name = it },
-                placeholder = "Ana García",
+                placeholder = "Nombre y apellido",
                 keyboardType = KeyboardType.Text
             )
 
@@ -297,7 +298,7 @@ fun RecoverAccessScreen(
     onBack: () -> Unit,
     onSent: (String) -> Unit
 ) {
-    SetStatusBarAppearance(lightIcons = false)
+    SetStatusBarAppearance(lightIcons = IsDarkTheme)
 
     val viewModel: RecoverViewModel = viewModel(factory = RecoverViewModel.Factory)
     val busy by viewModel.busy.collectAsStateWithLifecycle()
@@ -404,7 +405,7 @@ fun CheckEmailScreen(
     onBack: () -> Unit,
     onLogin: () -> Unit
 ) {
-    SetStatusBarAppearance(lightIcons = false)
+    SetStatusBarAppearance(lightIcons = IsDarkTheme)
 
     val viewModel: CheckEmailViewModel = viewModel(factory = CheckEmailViewModel.Factory)
     val busy by viewModel.busy.collectAsStateWithLifecycle()
@@ -512,7 +513,7 @@ fun NewPasswordScreen(
     onBack: () -> Unit,
     onSaved: () -> Unit
 ) {
-    SetStatusBarAppearance(lightIcons = false)
+    SetStatusBarAppearance(lightIcons = IsDarkTheme)
 
     val viewModel: NewPasswordViewModel = viewModel(factory = NewPasswordViewModel.Factory)
     val busy by viewModel.busy.collectAsStateWithLifecycle()

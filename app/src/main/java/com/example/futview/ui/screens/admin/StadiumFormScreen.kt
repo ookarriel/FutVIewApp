@@ -48,7 +48,6 @@ import com.example.futview.ui.viewmodel.StadiumFormViewModel
 import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.AdminFormActions
 import com.example.futview.ui.components.AdminSectionHeader
-import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.FormCard
 import com.example.futview.ui.components.FormLabel
 import com.example.futview.ui.components.FormTextField
@@ -95,7 +94,6 @@ fun StadiumFormScreen() {
             contentPadding = PaddingValues(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            item { DemoBanner() }
 
             item {
                 FormCard(
@@ -150,7 +148,7 @@ fun StadiumFormScreen() {
                     )
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        text = "Aforo en personas · Valor de demostración",
+                        text = "Aforo en personas",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
                     )

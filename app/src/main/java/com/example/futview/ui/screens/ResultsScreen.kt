@@ -36,7 +36,6 @@ import com.example.futview.ui.components.FilterPill
 import com.example.futview.ui.components.LoadingState
 import com.example.futview.ui.viewmodel.ResultsViewModel
 import com.example.futview.ui.viewmodel.UiState
-import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.FilterDropdownPill
 import com.example.futview.ui.components.FutViewSearchField
 import com.example.futview.ui.components.InfoNote
@@ -97,7 +96,6 @@ fun ResultsScreen(
                 else -> {}
             }
 
-            item { DemoBanner() }
 
             item {
                 FutViewSearchField(

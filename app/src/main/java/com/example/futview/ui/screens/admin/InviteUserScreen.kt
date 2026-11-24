@@ -79,9 +79,7 @@ fun InviteUserScreen(
             title = "Invitar usuario",
             subtitle = "Da acceso al panel de administración.",
             onAvatarClick = onBack,
-            onBack = onBack,
-            userLabel = "Admin",
-            userInitials = ""
+            onBack = onBack
         )
 
         LazyColumn(

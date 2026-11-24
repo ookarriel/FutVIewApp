@@ -21,16 +21,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AdminPanelSettings
-import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.CreditCard
-import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.Logout
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -38,16 +32,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.futview.data.model.initialsOf
 import com.example.futview.ui.components.Avatar
 import com.example.futview.ui.components.MenuItemRow
 import com.example.futview.ui.components.SetStatusBarAppearance
+import com.example.futview.ui.components.ToggleRow
 import com.example.futview.ui.theme.Border
 import com.example.futview.ui.theme.Card
-import com.example.futview.ui.theme.Ink
+import com.example.futview.ui.theme.IsDarkTheme
 import com.example.futview.ui.theme.Page
 import com.example.futview.ui.theme.TextPrimary
 import com.example.futview.ui.theme.TextSecondary
@@ -58,16 +52,13 @@ fun UserMenuScreen(
     isAdmin: Boolean = false,
     userName: String = "",
     userEmail: String = "",
+    darkTheme: Boolean,
+    onDarkThemeChange: (Boolean) -> Unit,
     onAdmin: () -> Unit,
     onStatus: () -> Unit = {},
-    onLogout: () -> Unit,
-    onProfile: () -> Unit,
-    onSettings: () -> Unit,
-    onNotifications: () -> Unit,
-    onHelp: () -> Unit,
-    onContact: () -> Unit
+    onLogout: () -> Unit
 ) {
-    SetStatusBarAppearance(lightIcons = false)
+    SetStatusBarAppearance(lightIcons = IsDarkTheme)
 
     Column(
         modifier = Modifier
@@ -85,13 +76,13 @@ fun UserMenuScreen(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Ink),
+                    .background(MaterialTheme.colorScheme.primary),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Layers,
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onPrimary,
                     modifier = Modifier.size(22.dp)
                 )
             }
@@ -143,26 +134,11 @@ fun UserMenuScreen(
         Spacer(Modifier.height(26.dp))
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            MenuItemRow(
-                icon = Icons.Outlined.Person,
-                label = "Mi perfil",
-                onClick = onProfile
-            )
-            MenuItemRow(
-                icon = Icons.Outlined.CreditCard,
-                label = "Mi cuenta",
-                onClick = onProfile
-            )
-            MenuItemRow(
-                icon = Icons.Outlined.Tune,
-                label = "Configuración",
-                onClick = onSettings
-            )
-            MenuItemRow(
-                icon = Icons.Outlined.Notifications,
-                label = "Notificaciones",
-                badge = "3",
-                onClick = onNotifications
+            ToggleRow(
+                title = "Modo oscuro",
+                subtitle = "Cambia la apariencia de la app",
+                enabled = darkTheme,
+                onToggle = { onDarkThemeChange(!darkTheme) }
             )
             if (isAdmin) {
                 MenuItemRow(
@@ -180,42 +156,12 @@ fun UserMenuScreen(
 
         Spacer(Modifier.height(18.dp))
 
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            MenuItemRow(
-                icon = Icons.Outlined.HelpOutline,
-                label = "Centro de ayuda",
-                onClick = onHelp
-            )
-            MenuItemRow(
-                icon = Icons.Outlined.ChatBubbleOutline,
-                label = "Contactar con soporte",
-                onClick = onContact
-            )
-        }
-
-        Spacer(Modifier.height(18.dp))
-
         MenuItemRow(
             icon = Icons.Outlined.Logout,
             label = "Cerrar sesión",
-            onClick = onLogout
+            onClick = onLogout,
+            tint = MaterialTheme.colorScheme.error
         )
-
-        Spacer(Modifier.height(30.dp))
-
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = "Tu espacio, a tu manera.",
-                style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = "v. 2.8",
-                style = MaterialTheme.typography.bodySmall,
-                color = TextSecondary
-            )
-        }
 
         Spacer(Modifier.height(24.dp))
     }

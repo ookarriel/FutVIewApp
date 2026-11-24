@@ -40,7 +40,6 @@ import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapView
 import com.example.futview.data.Match
 import com.example.futview.data.Stadium
-import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.DetailField
 import com.example.futview.ui.components.FutViewBottomBar
 import com.example.futview.ui.components.MatchCard
@@ -97,7 +96,6 @@ fun StadiumDetailScreen(
                 )
             }
 
-            item { DemoBanner() }
 
             item {
                 Column(

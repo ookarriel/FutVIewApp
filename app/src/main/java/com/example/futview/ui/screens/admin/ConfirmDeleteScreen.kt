@@ -56,9 +56,7 @@ fun ConfirmDeleteScreen(
             title = "Confirmar eliminación",
             subtitle = "Esta acción requiere tu confirmación.",
             onAvatarClick = onCancel,
-            onBack = onCancel,
-            userLabel = "Admin",
-            userInitials = ""
+            onBack = onCancel
         )
 
         LazyColumn(

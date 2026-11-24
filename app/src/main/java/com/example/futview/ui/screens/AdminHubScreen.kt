@@ -33,7 +33,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.example.futview.ui.components.AdminSectionHeader
-import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.ScreenHeader
 import com.example.futview.ui.components.SetStatusBarAppearance
 import com.example.futview.ui.theme.Card
@@ -71,12 +70,11 @@ fun AdminHubScreen(
             contentPadding = PaddingValues(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            item { DemoBanner() }
 
             item {
                 AdminSectionHeader(
                     title = "Mantenedores",
-                    subtitle = "Fichas de demostración para administrar la competencia.",
+                    subtitle = "Fichas para administrar la competencia.",
                     trailing = "5 fichas"
                 )
             }

@@ -22,7 +22,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.futview.data.Match
 import com.example.futview.data.StandingRow
-import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.DetailField
 import com.example.futview.ui.components.FutViewBottomBar
 import com.example.futview.ui.components.InfoPill
@@ -76,7 +75,6 @@ fun ResultDetailScreen(
                 )
             }
 
-            item { DemoBanner() }
 
             item {
                 ResultCard(

@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -38,6 +39,8 @@ import com.example.futview.ui.components.FutViewBottomBar
 import com.example.futview.ui.components.ScreenHeader
 import com.example.futview.ui.components.SetStatusBarAppearance
 import com.example.futview.ui.components.EmptyState
+import com.example.futview.ui.components.LocalUserIdentity
+import com.example.futview.ui.components.UserIdentity
 import com.example.futview.ui.screens.CheckEmailScreen
 import com.example.futview.ui.screens.ConnectionErrorScreen
 import com.example.futview.ui.screens.ContactSupportScreen
@@ -110,7 +113,10 @@ private enum class AdminTab(val title: String, val subtitle: String) {
 }
 
 @Composable
-fun FutViewApp() {
+fun FutViewApp(
+    darkTheme: Boolean = false,
+    onDarkThemeChange: (Boolean) -> Unit = {}
+) {
     val authViewModel: AuthStateViewModel = viewModel(factory = AuthStateViewModel.Factory)
     val authState by authViewModel.authUser.collectAsStateWithLifecycle()
     val sessionUser = (authState as? UiState.Success)?.data
@@ -287,340 +293,343 @@ fun FutViewApp() {
         else -> route
     }
 
-    when (activeRoute) {
-        Route.LOGIN -> LoginScreen(
-            onSignUp = { route = Route.SIGN_UP },
-            onRecover = { route = Route.RECOVER }
-        )
+    val userDisplayName = sessionUser?.displayName?.takeIf { it.isNotBlank() }
+        ?: sessionUser?.email?.substringBefore('@')?.takeIf { it.isNotBlank() }
+        ?: "Usuario"
+    val userIdentity = UserIdentity(
+        displayName = userDisplayName,
+        initials = initialsOf(userDisplayName)
+    )
 
-        Route.SIGN_UP -> SignUpScreen(
-            onBack = { route = Route.LOGIN },
-            onLogin = { route = Route.LOGIN },
-            onRegistered = { email ->
-                pendingEmail = email
-                route = Route.CHECK_EMAIL
-            }
-        )
-
-        Route.RECOVER -> RecoverAccessScreen(
-            onBack = { route = Route.LOGIN },
-            onSent = { email ->
-                pendingEmail = email
-                route = Route.CHECK_EMAIL
-            }
-        )
-
-        Route.CHECK_EMAIL -> CheckEmailScreen(
-            email = pendingEmail,
-            onBack = { route = Route.RECOVER },
-            onLogin = { route = Route.LOGIN }
-        )
-
-        Route.NEW_PASSWORD -> NewPasswordScreen(
-            onBack = { route = Route.SETTINGS },
-            onSaved = { route = Route.LOGIN }
-        )
-
-        Route.HOME -> Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Card)
-        ) {
-            Box(modifier = Modifier.weight(1f)) {
-                when (tab) {
-                    MainTab.PARTIDOS -> MatchesScreen(
-                        favoriteTeamIds = favoriteTeams,
-                        favoriteMatchIds = favoriteMatches,
-                        onToggleMatchFavorite = { toggleMatchFavorite(it) },
-                        onAvatarClick = { route = Route.MENU },
-                        onMatchClick = openMatchDetail
-                    )
-
-                    MainTab.RESULTADOS -> ResultsScreen(
-                        favoriteMatchIds = favoriteMatches,
-                        onToggleMatchFavorite = { toggleMatchFavorite(it) },
-                        onAvatarClick = { route = Route.MENU },
-                        onResultClick = openResultDetail
-                    )
-
-                    MainTab.EQUIPOS -> TeamsScreen(
-                        favoriteTeamIds = favoriteTeams,
-                        onToggleTeamFavorite = { toggleTeamFavorite(it) },
-                        onAvatarClick = { route = Route.MENU },
-                        onTeamClick = openTeamDetail
-                    )
-
-                    MainTab.ESTADIOS -> StadiumsScreen(
-                        favoriteStadiumIds = favoriteStadiums,
-                        onToggleStadiumFavorite = { toggleStadiumFavorite(it) },
-                        onAvatarClick = { route = Route.MENU },
-                        onStadiumClick = openStadiumDetail
-                    )
-
-                    MainTab.FAVORITOS -> FavoritesScreen(
-                        favoriteTeamIds = favoriteTeams,
-                        favoriteMatchIds = favoriteMatches,
-                        favoriteStadiumIds = favoriteStadiums,
-                        onToggleTeamFavorite = { toggleTeamFavorite(it) },
-                        onToggleMatchFavorite = { toggleMatchFavorite(it) },
-                        onToggleStadiumFavorite = { toggleStadiumFavorite(it) },
-                        onAvatarClick = { route = Route.MENU },
-                        onExploreTeams = { selectMainTab(MainTab.EQUIPOS.ordinal) },
-                        onViewMatches = { selectMainTab(MainTab.PARTIDOS.ordinal) }
-                    )
-                }
-            }
-            FutViewBottomBar(
-                selectedIndex = tab.ordinal,
-                onSelect = selectMainTab
+    CompositionLocalProvider(LocalUserIdentity provides userIdentity) {
+        when (activeRoute) {
+            Route.LOGIN -> LoginScreen(
+                onSignUp = { route = Route.SIGN_UP },
+                onRecover = { route = Route.RECOVER }
             )
-        }
 
-        Route.MENU -> UserMenuScreen(
-            onClose = { route = Route.HOME },
-            isAdmin = isAdmin,
-            userName = sessionUser?.displayName.orEmpty(),
-            userEmail = sessionUser?.email.orEmpty(),
-            onAdmin = {
-                adminTab = AdminTab.EQUIPOS
-                route = Route.ADMIN
-            },
-            onLogout = {
-                authViewModel.signOut()
-                tab = MainTab.PARTIDOS
-                adminTab = AdminTab.EQUIPOS
-                route = Route.LOGIN
-            },
-            onStatus = { route = Route.ADMIN_STATUS },
-            onProfile = { route = Route.PROFILE },
-            onSettings = { route = Route.SETTINGS },
-            onNotifications = { route = Route.NOTIFICATIONS },
-            onHelp = { route = Route.HELP },
-            onContact = { route = Route.CONTACT }
-        )
+            Route.SIGN_UP -> SignUpScreen(
+                onBack = { route = Route.LOGIN },
+                onLogin = { route = Route.LOGIN },
+                onRegistered = { email ->
+                    pendingEmail = email
+                    route = Route.CHECK_EMAIL
+                }
+            )
 
-        Route.PROFILE -> ProfileScreen(
-            onBack = { route = Route.MENU },
-            onViewFavorites = { selectMainTab(MainTab.FAVORITOS.ordinal) },
-            onSelectTab = selectMainTab,
-            userName = sessionUser?.displayName.orEmpty(),
-            userEmail = sessionUser?.email.orEmpty()
-        )
+            Route.RECOVER -> RecoverAccessScreen(
+                onBack = { route = Route.LOGIN },
+                onSent = { email ->
+                    pendingEmail = email
+                    route = Route.CHECK_EMAIL
+                }
+            )
 
-        Route.SETTINGS -> SettingsScreen(
-            onBack = { route = Route.MENU },
-            onChangePassword = { route = Route.NEW_PASSWORD },
-            onLogout = {
-                authViewModel.signOut()
-                tab = MainTab.PARTIDOS
-                adminTab = AdminTab.EQUIPOS
-                route = Route.LOGIN
-            },
-            onSelectTab = selectMainTab
-        )
+            Route.CHECK_EMAIL -> CheckEmailScreen(
+                email = pendingEmail,
+                onBack = { route = Route.RECOVER },
+                onLogin = { route = Route.LOGIN }
+            )
 
-        Route.NOTIFICATIONS -> NotificationsScreen(
-            onBack = { route = Route.MENU },
-            onViewMatch = { openMatchDetail("m2") },
-            onViewResult = { openResultDetail("m1") },
-            onExploreTeams = { selectMainTab(MainTab.EQUIPOS.ordinal) },
-            onSelectTab = selectMainTab
-        )
+            Route.NEW_PASSWORD -> NewPasswordScreen(
+                onBack = { route = Route.SETTINGS },
+                onSaved = { route = Route.LOGIN }
+            )
 
-        Route.HELP -> HelpCenterScreen(
-            onBack = { route = Route.MENU },
-            onContact = { route = Route.CONTACT },
-            onSelectTab = selectMainTab
-        )
-
-        Route.CONTACT -> ContactSupportScreen(
-            onBack = { route = Route.HELP },
-            onSelectTab = selectMainTab
-        )
-
-        Route.ADMIN -> {
-            SetStatusBarAppearance(lightIcons = true)
-            if (isAdmin) {
-            Column(
+            Route.HOME -> Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Page)
+                    .background(Card)
             ) {
-                ScreenHeader(
-                    title = adminTab.title,
-                    subtitle = adminTab.subtitle,
-                    onAvatarClick = { route = Route.MENU },
-                    userLabel = sessionUser?.displayName.orEmpty().ifBlank { "Administración" },
-                    userInitials = initialsOf(sessionUser?.displayName)
-                )
-
                 Box(modifier = Modifier.weight(1f)) {
-                    when (adminTab) {
-                        AdminTab.EQUIPOS -> ClubFormScreen()
-                        AdminTab.ESTADIOS -> StadiumFormScreen()
-                        AdminTab.FIXTURE -> MatchFormScreen()
-                        AdminTab.RESULTADOS -> ActaScreen()
-                        AdminTab.USUARIOS -> UserFormScreen(
-                            onInviteUser = { route = Route.INVITE_USER }
+                    when (tab) {
+                        MainTab.PARTIDOS -> MatchesScreen(
+                            favoriteTeamIds = favoriteTeams,
+                            favoriteMatchIds = favoriteMatches,
+                            onToggleMatchFavorite = { toggleMatchFavorite(it) },
+                            onAvatarClick = { route = Route.MENU },
+                            onMatchClick = openMatchDetail
+                        )
+
+                        MainTab.RESULTADOS -> ResultsScreen(
+                            favoriteMatchIds = favoriteMatches,
+                            onToggleMatchFavorite = { toggleMatchFavorite(it) },
+                            onAvatarClick = { route = Route.MENU },
+                            onResultClick = openResultDetail
+                        )
+
+                        MainTab.EQUIPOS -> TeamsScreen(
+                            favoriteTeamIds = favoriteTeams,
+                            onToggleTeamFavorite = { toggleTeamFavorite(it) },
+                            onAvatarClick = { route = Route.MENU },
+                            onTeamClick = openTeamDetail
+                        )
+
+                        MainTab.ESTADIOS -> StadiumsScreen(
+                            favoriteStadiumIds = favoriteStadiums,
+                            onToggleStadiumFavorite = { toggleStadiumFavorite(it) },
+                            onAvatarClick = { route = Route.MENU },
+                            onStadiumClick = openStadiumDetail
+                        )
+
+                        MainTab.FAVORITOS -> FavoritesScreen(
+                            favoriteTeamIds = favoriteTeams,
+                            favoriteMatchIds = favoriteMatches,
+                            favoriteStadiumIds = favoriteStadiums,
+                            onToggleTeamFavorite = { toggleTeamFavorite(it) },
+                            onToggleMatchFavorite = { toggleMatchFavorite(it) },
+                            onToggleStadiumFavorite = { toggleStadiumFavorite(it) },
+                            onAvatarClick = { route = Route.MENU },
+                            onExploreTeams = { selectMainTab(MainTab.EQUIPOS.ordinal) },
+                            onViewMatches = { selectMainTab(MainTab.PARTIDOS.ordinal) }
                         )
                     }
                 }
-
-                AdminBottomBar(
-                    selectedIndex = adminTab.ordinal,
-                    onSelect = selectAdminTab
+                FutViewBottomBar(
+                    selectedIndex = tab.ordinal,
+                    onSelect = selectMainTab
                 )
             }
-            } else {
+
+            Route.MENU -> UserMenuScreen(
+                onClose = { route = Route.HOME },
+                isAdmin = isAdmin,
+                userName = userDisplayName,
+                userEmail = sessionUser?.email.orEmpty(),
+                darkTheme = darkTheme,
+                onDarkThemeChange = onDarkThemeChange,
+                onAdmin = {
+                    adminTab = AdminTab.EQUIPOS
+                    route = Route.ADMIN
+                },
+                onLogout = {
+                    authViewModel.signOut()
+                    tab = MainTab.PARTIDOS
+                    adminTab = AdminTab.EQUIPOS
+                    route = Route.LOGIN
+                },
+                onStatus = { route = Route.ADMIN_STATUS }
+            )
+
+            Route.PROFILE -> ProfileScreen(
+                onBack = { route = Route.MENU },
+                onViewFavorites = { selectMainTab(MainTab.FAVORITOS.ordinal) },
+                onSelectTab = selectMainTab,
+                userName = sessionUser?.displayName.orEmpty(),
+                userEmail = sessionUser?.email.orEmpty()
+            )
+
+            Route.SETTINGS -> SettingsScreen(
+                onBack = { route = Route.MENU },
+                onChangePassword = { route = Route.NEW_PASSWORD },
+                onLogout = {
+                    authViewModel.signOut()
+                    tab = MainTab.PARTIDOS
+                    adminTab = AdminTab.EQUIPOS
+                    route = Route.LOGIN
+                },
+                onSelectTab = selectMainTab
+            )
+
+            Route.NOTIFICATIONS -> NotificationsScreen(
+                onBack = { route = Route.MENU },
+                onViewMatch = { openMatchDetail("m2") },
+                onViewResult = { openResultDetail("m1") },
+                onExploreTeams = { selectMainTab(MainTab.EQUIPOS.ordinal) },
+                onSelectTab = selectMainTab
+            )
+
+            Route.HELP -> HelpCenterScreen(
+                onBack = { route = Route.MENU },
+                onContact = { route = Route.CONTACT },
+                onSelectTab = selectMainTab
+            )
+
+            Route.CONTACT -> ContactSupportScreen(
+                onBack = { route = Route.HELP },
+                onSelectTab = selectMainTab
+            )
+
+            Route.ADMIN -> {
+                SetStatusBarAppearance(lightIcons = true)
+                if (isAdmin) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Page)
                 ) {
                     ScreenHeader(
-                        title = "Administración",
-                        subtitle = "Panel restringido a administradores.",
-                        onAvatarClick = { route = Route.MENU },
-                        userLabel = sessionUser?.displayName.orEmpty().ifBlank { "Usuario" },
-                        userInitials = initialsOf(sessionUser?.displayName)
+                        title = adminTab.title,
+                        subtitle = adminTab.subtitle,
+                        onAvatarClick = { route = Route.MENU }
                     )
-                    EmptyState(
-                        icon = Icons.Outlined.Lock,
-                        title = "Acceso restringido",
-                        message = "Tu cuenta no tiene permisos de administración. Si crees que deberías tenerlos, contacta a un administrador.",
-                        primaryText = "Volver al menú",
-                        onPrimary = { route = Route.MENU }
+
+                    Box(modifier = Modifier.weight(1f)) {
+                        when (adminTab) {
+                            AdminTab.EQUIPOS -> ClubFormScreen()
+                            AdminTab.ESTADIOS -> StadiumFormScreen()
+                            AdminTab.FIXTURE -> MatchFormScreen()
+                            AdminTab.RESULTADOS -> ActaScreen()
+                            AdminTab.USUARIOS -> UserFormScreen(
+                                onInviteUser = { route = Route.INVITE_USER }
+                            )
+                        }
+                    }
+
+                    AdminBottomBar(
+                        selectedIndex = adminTab.ordinal,
+                        onSelect = selectAdminTab
+                    )
+                }
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Page)
+                    ) {
+                        ScreenHeader(
+                            title = "Administración",
+                            subtitle = "Panel restringido a administradores.",
+                            onAvatarClick = { route = Route.MENU }
+                        )
+                        EmptyState(
+                            icon = Icons.Outlined.Lock,
+                            title = "Acceso restringido",
+                            message = "Tu cuenta no tiene permisos de administración. Si crees que deberías tenerlos, contacta a un administrador.",
+                            primaryText = "Volver al menú",
+                            onPrimary = { route = Route.MENU }
+                        )
+                    }
+                }
+            }
+
+            Route.ADMIN_STATUS -> {
+                SetStatusBarAppearance(lightIcons = true)
+                if (isAdmin) {
+                    com.example.futview.ui.screens.admin.AdminStatusScreen(
+                        sessionUser = sessionUser,
+                        onBack = { route = Route.MENU },
+                        onSelectTab = selectMainTab
+                    )
+                } else {
+                    route = Route.MENU
+                }
+            }
+
+            Route.INVITE_USER -> InviteUserScreen(
+                onBack = { route = Route.ADMIN },
+                onSelectTab = selectAdminTab
+            )
+
+            Route.CONFIRM_DELETE -> {
+                val match = selectedMatchId?.let { id ->
+                    upcomingMatches.firstOrNull { it.id == id }
+                }
+                if (match != null) {
+                    ConfirmDeleteScreen(
+                        match = match,
+                        onCancel = { route = Route.ADMIN },
+                        onConfirm = { route = Route.ADMIN },
+                        onSelectTab = selectAdminTab
                     )
                 }
             }
-        }
 
-        Route.ADMIN_STATUS -> {
-            SetStatusBarAppearance(lightIcons = true)
-            if (isAdmin) {
-                com.example.futview.ui.screens.admin.AdminStatusScreen(
-                    sessionUser = sessionUser,
-                    onBack = { route = Route.MENU },
-                    onSelectTab = selectMainTab
-                )
-            } else {
-                route = Route.MENU
+            Route.MATCH_DETAIL -> {
+                val match = upcomingMatches.firstOrNull { it.id == selectedMatchId }
+                if (match != null) {
+                    MatchDetailScreen(
+                        match = match,
+                        favorite = match.id in favoriteMatches,
+                        onToggleFavorite = { toggleMatchFavorite(match.id) },
+                        onBack = {
+                            tab = MainTab.PARTIDOS
+                            route = Route.HOME
+                        },
+                        onViewStadium = { openMatchStadium(match) },
+                        onAvatarClick = { route = Route.MENU },
+                        onSelectTab = selectMainTab
+                    )
+                }
             }
-        }
 
-        Route.INVITE_USER -> InviteUserScreen(
-            onBack = { route = Route.ADMIN },
-            onSelectTab = selectAdminTab
-        )
-
-        Route.CONFIRM_DELETE -> {
-            val match = selectedMatchId?.let { id ->
-                upcomingMatches.firstOrNull { it.id == id }
+            Route.RESULT_DETAIL -> {
+                val match = results.firstOrNull { it.id == selectedMatchId }
+                if (match != null) {
+                    ResultDetailScreen(
+                        match = match,
+                        standings = standings,
+                        finishedMatches = results.size,
+                        totalGoals = results.sumOf { (it.homeGoals ?: 0) + (it.awayGoals ?: 0) },
+                        favorite = match.id in favoriteMatches,
+                        onToggleFavorite = { toggleMatchFavorite(match.id) },
+                        onBack = {
+                            tab = MainTab.RESULTADOS
+                            route = Route.HOME
+                        },
+                        onAvatarClick = { route = Route.MENU },
+                        onSelectTab = selectMainTab
+                    )
+                }
             }
-            if (match != null) {
-                ConfirmDeleteScreen(
-                    match = match,
-                    onCancel = { route = Route.ADMIN },
-                    onConfirm = { route = Route.ADMIN },
-                    onSelectTab = selectAdminTab
-                )
-            }
-        }
 
-        Route.MATCH_DETAIL -> {
-            val match = upcomingMatches.firstOrNull { it.id == selectedMatchId }
-            if (match != null) {
-                MatchDetailScreen(
-                    match = match,
-                    favorite = match.id in favoriteMatches,
-                    onToggleFavorite = { toggleMatchFavorite(match.id) },
-                    onBack = {
-                        tab = MainTab.PARTIDOS
-                        route = Route.HOME
-                    },
-                    onViewStadium = { openMatchStadium(match) },
-                    onAvatarClick = { route = Route.MENU },
-                    onSelectTab = selectMainTab
-                )
+            Route.TEAM_DETAIL -> {
+                val team = teams.firstOrNull { it.id == selectedTeamId }
+                if (team != null) {
+                    TeamDetailScreen(
+                        team = team,
+                        nextMatch = upcomingMatches.firstOrNull {
+                            it.home.id == team.id || it.away.id == team.id
+                        },
+                        lastResult = results.firstOrNull {
+                            it.home.id == team.id || it.away.id == team.id
+                        },
+                        favorite = team.id in favoriteTeams,
+                        onToggleFavorite = { toggleTeamFavorite(team.id) },
+                        favoriteMatchIds = favoriteMatches,
+                        onToggleMatchFavorite = { toggleMatchFavorite(it) },
+                        onBack = {
+                            tab = MainTab.EQUIPOS
+                            route = Route.HOME
+                        },
+                        onViewStadium = { openTeamStadium(team) },
+                        onViewMatch = openMatchDetail,
+                        onViewResult = openResultDetail,
+                        onAvatarClick = { route = Route.MENU },
+                        onSelectTab = selectMainTab
+                    )
+                }
             }
-        }
 
-        Route.RESULT_DETAIL -> {
-            val match = results.firstOrNull { it.id == selectedMatchId }
-            if (match != null) {
-                ResultDetailScreen(
-                    match = match,
-                    standings = standings,
-                    finishedMatches = results.size,
-                    totalGoals = results.sumOf { (it.homeGoals ?: 0) + (it.awayGoals ?: 0) },
-                    favorite = match.id in favoriteMatches,
-                    onToggleFavorite = { toggleMatchFavorite(match.id) },
-                    onBack = {
-                        tab = MainTab.RESULTADOS
-                        route = Route.HOME
-                    },
-                    onAvatarClick = { route = Route.MENU },
-                    onSelectTab = selectMainTab
-                )
+            Route.STADIUM_DETAIL -> {
+                val stadium = stadiums.firstOrNull { it.id == selectedStadiumId }
+                if (stadium != null) {
+                    StadiumDetailScreen(
+                        stadium = stadium,
+                        nextMatch = upcomingMatches.firstOrNull {
+                            it.stadium.startsWith(stadium.name)
+                        },
+                        favorite = stadium.id in favoriteStadiums,
+                        onToggleFavorite = { toggleStadiumFavorite(stadium.id) },
+                        favoriteMatchIds = favoriteMatches,
+                        onToggleMatchFavorite = { toggleMatchFavorite(it) },
+                        onBack = {
+                            tab = MainTab.ESTADIOS
+                            route = Route.HOME
+                        },
+                        onViewMatch = openMatchDetail,
+                        onAvatarClick = { route = Route.MENU },
+                        onSelectTab = selectMainTab
+                    )
+                }
             }
-        }
 
-        Route.TEAM_DETAIL -> {
-            val team = teams.firstOrNull { it.id == selectedTeamId }
-            if (team != null) {
-                TeamDetailScreen(
-                    team = team,
-                    nextMatch = upcomingMatches.firstOrNull {
-                        it.home.id == team.id || it.away.id == team.id
-                    },
-                    lastResult = results.firstOrNull {
-                        it.home.id == team.id || it.away.id == team.id
-                    },
-                    favorite = team.id in favoriteTeams,
-                    onToggleFavorite = { toggleTeamFavorite(team.id) },
-                    favoriteMatchIds = favoriteMatches,
-                    onToggleMatchFavorite = { toggleMatchFavorite(it) },
-                    onBack = {
-                        tab = MainTab.EQUIPOS
-                        route = Route.HOME
-                    },
-                    onViewStadium = { openTeamStadium(team) },
-                    onViewMatch = openMatchDetail,
-                    onViewResult = openResultDetail,
-                    onAvatarClick = { route = Route.MENU },
-                    onSelectTab = selectMainTab
-                )
-            }
+            Route.CONNECTION_ERROR -> ConnectionErrorScreen(
+                onBack = { route = Route.HOME },
+                onRetry = { route = Route.HOME },
+                onOpenHelp = { route = Route.HELP },
+                onSelectTab = selectMainTab
+            )
         }
-
-        Route.STADIUM_DETAIL -> {
-            val stadium = stadiums.firstOrNull { it.id == selectedStadiumId }
-            if (stadium != null) {
-                StadiumDetailScreen(
-                    stadium = stadium,
-                    nextMatch = upcomingMatches.firstOrNull {
-                        it.stadium.startsWith(stadium.name)
-                    },
-                    favorite = stadium.id in favoriteStadiums,
-                    onToggleFavorite = { toggleStadiumFavorite(stadium.id) },
-                    favoriteMatchIds = favoriteMatches,
-                    onToggleMatchFavorite = { toggleMatchFavorite(it) },
-                    onBack = {
-                        tab = MainTab.ESTADIOS
-                        route = Route.HOME
-                    },
-                    onViewMatch = openMatchDetail,
-                    onAvatarClick = { route = Route.MENU },
-                    onSelectTab = selectMainTab
-                )
-            }
-        }
-
-        Route.CONNECTION_ERROR -> ConnectionErrorScreen(
-            onBack = { route = Route.HOME },
-            onRetry = { route = Route.HOME },
-            onOpenHelp = { route = Route.HELP },
-            onSelectTab = selectMainTab
-        )
     }
 }

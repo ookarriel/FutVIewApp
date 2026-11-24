@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import com.example.futview.data.Match
 import com.example.futview.data.Team
 import com.example.futview.ui.components.Crest
-import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.DetailField
 import com.example.futview.ui.components.FutViewBottomBar
 import com.example.futview.ui.components.MatchCard
@@ -91,7 +90,6 @@ fun TeamDetailScreen(
                 )
             }
 
-            item { DemoBanner() }
 
             item {
                 Column(
@@ -254,7 +252,7 @@ fun TeamDetailScreen(
 
             item {
                 Text(
-                    text = "Escudo ilustrativo · Datos de demostración, no oficiales.",
+                    text = "Escudo no disponible.",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary,
                     modifier = Modifier.padding(horizontal = 20.dp)

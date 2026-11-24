@@ -32,7 +32,6 @@ import com.example.futview.ui.components.FirestoreErrorBanner
 import com.example.futview.ui.components.LoadingState
 import com.example.futview.ui.viewmodel.MatchesViewModel
 import com.example.futview.ui.viewmodel.UiState
-import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.FilterDropdownPill
 import com.example.futview.ui.components.FilterPill
 import com.example.futview.ui.components.FutViewSearchField
@@ -96,7 +95,6 @@ fun MatchesScreen(
                 else -> {}
             }
 
-            item { DemoBanner() }
 
             item {
                 FutViewSearchField(

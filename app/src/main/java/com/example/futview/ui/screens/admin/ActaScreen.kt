@@ -49,7 +49,6 @@ import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.viewmodel.WikipediaSyncViewModel
 import com.example.futview.ui.components.AdminSectionHeader
 import com.example.futview.ui.components.Crest
-import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.FormCard
 import com.example.futview.ui.components.FormDropdown
 import com.example.futview.ui.components.FormLabel
@@ -115,7 +114,6 @@ fun ActaScreen() {
             contentPadding = PaddingValues(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            item { DemoBanner() }
 
             item {
                 FormCard(

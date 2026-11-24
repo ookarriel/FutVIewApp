@@ -343,7 +343,7 @@ fun SettingsScreen(
 
             item {
                 Text(
-                    text = "FutView · v. 2.8",
+                    text = "FutView",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary,
                     modifier = Modifier.padding(horizontal = 20.dp)

@@ -56,6 +56,7 @@ import com.example.futview.ui.theme.Border
 import com.example.futview.ui.theme.Card
 import com.example.futview.ui.theme.Field
 import com.example.futview.ui.theme.Ink
+import com.example.futview.ui.theme.IsDarkTheme
 import com.example.futview.ui.theme.Page
 import com.example.futview.ui.theme.TextPrimary
 import com.example.futview.ui.theme.TextSecondary
@@ -66,7 +67,7 @@ fun LoginScreen(
     onSignUp: () -> Unit,
     onRecover: () -> Unit
 ) {
-    SetStatusBarAppearance(lightIcons = false)
+    SetStatusBarAppearance(lightIcons = IsDarkTheme)
 
     val viewModel: LoginViewModel = viewModel(factory = LoginViewModel.Factory)
     val busy by viewModel.busy.collectAsStateWithLifecycle()
@@ -191,10 +192,10 @@ fun LoginScreen(
                         modifier = Modifier
                             .size(20.dp)
                             .clip(RoundedCornerShape(5.dp))
-                            .background(if (rememberSession) Ink else Color.Transparent)
+                            .background(if (rememberSession) MaterialTheme.colorScheme.primary else Color.Transparent)
                             .border(
                                 width = 1.dp,
-                                color = if (rememberSession) Ink else Border,
+                                color = if (rememberSession) MaterialTheme.colorScheme.primary else Border,
                                 shape = RoundedCornerShape(5.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -203,7 +204,7 @@ fun LoginScreen(
                             Icon(
                                 imageVector = Icons.Outlined.Check,
                                 contentDescription = null,
-                                tint = Color.White,
+                                tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(14.dp)
                             )
                         }

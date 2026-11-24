@@ -47,7 +47,6 @@ import com.example.futview.ui.viewmodel.FavoritesUiData
 import com.example.futview.ui.viewmodel.FavoritesViewModel
 import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.Crest
-import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.EmptyState
 import com.example.futview.ui.components.FilterPill
 import com.example.futview.ui.components.FutViewSearchField
@@ -146,7 +145,6 @@ fun FavoritesScreen(
                 else -> {}
             }
 
-            item { DemoBanner() }
 
             item {
                 FutViewSearchField(

@@ -8,7 +8,7 @@ data class AuthUser(
     val emailVerified: Boolean
 )
 
-/** Iniciales a partir del nombre (p. ej. "Ana García" → "AG"). */
+/** Iniciales a partir del nombre (p. ej. "Nombre Apellido" → "NA"). */
 fun initialsOf(name: String?): String =
     name.orEmpty()
         .split(" ")

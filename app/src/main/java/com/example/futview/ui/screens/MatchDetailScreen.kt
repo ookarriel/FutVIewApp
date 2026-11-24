@@ -19,7 +19,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.futview.data.Match
-import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.DetailField
 import com.example.futview.ui.components.FutViewBottomBar
 import com.example.futview.ui.components.MatchCard
@@ -68,7 +67,6 @@ fun MatchDetailScreen(
                 )
             }
 
-            item { DemoBanner() }
 
             item {
                 MatchCard(

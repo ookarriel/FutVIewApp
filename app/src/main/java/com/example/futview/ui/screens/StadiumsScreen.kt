@@ -44,7 +44,6 @@ import com.example.futview.ui.components.FirestoreErrorBanner
 import com.example.futview.ui.components.LoadingState
 import com.example.futview.ui.viewmodel.StadiumsViewModel
 import com.example.futview.ui.viewmodel.UiState
-import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.FilterDropdownPill
 import com.example.futview.ui.components.FilterPill
 import com.example.futview.ui.components.FutViewSearchField
@@ -107,7 +106,6 @@ fun StadiumsScreen(
                 else -> {}
             }
 
-            item { DemoBanner() }
 
             item {
                 FutViewSearchField(

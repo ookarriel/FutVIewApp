@@ -50,7 +50,6 @@ import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.AdminFormActions
 import com.example.futview.ui.components.AdminSectionHeader
 import com.example.futview.ui.components.Crest
-import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.FormCard
 import com.example.futview.ui.components.FormLabel
 import com.example.futview.ui.components.FormTextField
@@ -113,7 +112,6 @@ fun ClubFormScreen() {
             contentPadding = PaddingValues(bottom = 24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            item { DemoBanner() }
 
             if (teams.isEmpty() && teamsState is UiState.Success) {
                 item {
@@ -222,7 +220,7 @@ fun ClubFormScreen() {
                             )
                             Spacer(Modifier.height(2.dp))
                             Text(
-                                text = "Escudo ilustrativo · CC",
+                                text = "Iniciales del club",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextSecondary
                             )
@@ -355,7 +353,7 @@ fun ClubFormScreen() {
 
             item {
                 InfoNote(
-                    text = "Selecciona un club de la lista para editarlo. Los escudos son ilustrativos."
+                    text = "Selecciona un club de la lista para editarlo."
                 )
             }
         }

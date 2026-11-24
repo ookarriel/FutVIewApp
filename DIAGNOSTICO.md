@@ -9,12 +9,12 @@
 
 FutView es una app Android en **Kotlin + Jetpack Compose** para consultar información del fútbol chileno (equipos, estadios, partidos, resultados, favoritos) con un panel de administración.
 
-**Estado actual: prototipo visual limpio, esperando la capa de datos.** Toda la interfaz está construida (~7.800 líneas de UI Compose) siguiendo los mockups de `mockups/`, pero:
+**Estado actual: app funcional con datos reales.** La interfaz está construida en Jetpack Compose y conectada a Firebase Auth/Firestore, ESPN y MapLibre:
 
-- ✅ **Fase 0 completada**: los datos hardcodeados (`FutViewData`) fueron eliminados; las pantallas compilan y muestran estados vacíos hasta conectar Firestore.
-- **No hay Firebase funcional**: existe el `google-services.json` y el plugin de Gradle, pero falta agregar las dependencias y todo el código de Auth/Firestore.
-- **No hay mapas**: el SDK de Google Maps no está integrado; el botón "Abrir dirección en mapas" del detalle de estadio tiene `onClick = {}` vacío.
-- ✅ **Fase 1 completada**: arquitectura base lista — repositorios con contratos, ViewModels por pantalla y estados de carga/error. La fuente de datos es temporal (listas vacías) hasta conectar Firestore en la Fase 3.
+- ✅ **Fase 0 completada**: los datos hardcodeados (`FutViewData`) fueron eliminados; las pantallas leen datos reales o muestran estados vacíos/error.
+- ✅ **Firebase funcional**: autenticación, sesión persistente, roles, catálogos, favoritos y reglas de seguridad.
+- ✅ **Mapas gratuitos**: MapLibre + OpenFreeMap, sin API key ni tarjeta.
+- ✅ **Datos de fútbol reales**: ESPN alimenta partidos, resultados y posiciones de la temporada 2026.
 
 ---
 
@@ -27,36 +27,36 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 | AGP | 9.2.1 | Kotlin integrado en AGP (no hay plugin `kotlin-android` separado) |
 | minSdk / targetSdk / compileSdk | 33 / 36 / 37 | |
 | applicationId | `com.example.futview` | ⚠️ Cambiar antes de publicar |
-| Firebase | `google-services.json` (proyecto `futview-a23f1`, package correcto) + plugin `com.google.gms.google-services` 4.6.0 + BOM 35.2.0 | ✅ Configuración base lista; Auth conectado (Fase 2); Firestore como dependencia y repos de usuarios; datos de catálogo pendientes (Fase 3) |
-| Mapas | — | ❌ No integrado |
-| Navegación | Enum manual + `BackHandler` (`navigation/FutViewApp.kt`) | ⚠️ Funciona para el prototipo; evaluar migrar a Navigation Compose |
+| Firebase | `google-services.json` (proyecto `futview-a23f1`, package correcto) + plugin `com.google.gms.google-services` 4.6.0 + BOM 35.2.0 | ✅ Auth, Firestore, favoritos, roles y catálogos conectados |
+| Mapas | MapLibre 11.5 + OpenFreeMap | ✅ Gratuito, sin API key ni tarjeta |
+| Navegación | Enum manual + `BackHandler` (`navigation/FutViewApp.kt`) | ⚠️ Funcional; evaluar migrar a Navigation Compose |
 | Tests | Solo plantilla (`ExampleUnitTest`, `ExampleInstrumentedTest`) | ❌ Sin tests reales |
 
 ---
 
 ## 3. Lo que ya existe
 
-### UI de usuario (completa como mockup navegable)
-- **Login / Registro / Recuperar contraseña / Verificar email / Nueva contraseña** (`LoginScreen.kt`, `AuthScreens.kt`): pantallas terminadas, sin datos precargados y navegación simulada (el login navega directo a HOME).
+### UI de usuario (conectada a datos reales)
+- **Login / Registro / Recuperar contraseña / Verificar email / Nueva contraseña** (`LoginScreen.kt`, `AuthScreens.kt`): autenticación real con Firebase Auth, verificación de correo y recuperación.
 - **Partidos** (`MatchesScreen`, `MatchDetailScreen`): fixture agrupado por fecha, detalle con botón a estadio.
-- **Resultados** (`ResultsScreen`, `ResultDetailScreen`): marcadores finalizados.
+- **Resultados** (`ResultsScreen`, `ResultDetailScreen`): marcadores finalizados y tabla oficial desde ESPN.
 - **Equipos** (`TeamsScreen`, `TeamDetailScreen`): lista y detalle con próximo partido y estadio.
-- **Estadios** (`StadiumsScreen`, `StadiumDetailScreen`): lista y detalle con dirección, aforo y botón de mapas (sin funcionalidad).
-- **Favoritos** (`FavoritesScreen`): equipos, partidos y estadios favoritos. Guardados solo en memoria (`mutableStateListOf`), **se pierden al cerrar la app**.
-- **Menú de usuario** (`UserMenuScreen`, `AccountScreens.kt`): perfil, ajustes, notificaciones, ayuda, contacto (pantallas estáticas).
+- **Estadios** (`StadiumsScreen`, `StadiumDetailScreen`): lista y detalle con dirección, aforo y mapa MapLibre.
+- **Favoritos** (`FavoritesScreen`): equipos, partidos y estadios favoritos persistidos por usuario en Firestore.
+- **Menú de usuario** (`UserMenuScreen.kt`): usuario autenticado real, switch persistente de modo oscuro, administración/estado para Admin/Editor y cierre de sesión. Sin botones de perfil, cuenta, configuración, notificaciones, ayuda o contacto.
 
 ### UI de administración
-- Panel admin con 5 pestañas (`AdminHubScreen`, `admin/*.kt`): formularios de Equipos, Estadios (con campos de ubicación GPS), Partidos/Fixture, Resultados (Acta) y Usuarios + invitación de usuarios y confirmación de borrado. **Ningún formulario persiste datos.**
+- Panel admin con 5 pestañas (`AdminHubScreen`, `admin/*.kt`): formularios reales de Equipos, Estadios (con campos de ubicación GPS), Partidos/Fixture, Resultados (Acta) y Usuarios + invitación de usuarios y confirmación de borrado. Todos persisten en Firestore.
 
 ### Modelos de datos (`data/Models.kt`)
 - `Team`, `Stadium`, `Match`, `StandingRow`, `SystemUser`, `FixtureDay`, `MatchStatus`.
 - ⚠️ `Stadium.latitude` y `longitude` son `String`. Para Firestore + Maps conviene usar `GeoPoint` (o `Double`).
-- ℹ️ El objeto demo `FutViewData` fue eliminado en la Fase 0; las pantallas leen de listas vacías con `// TODO Fase 3` marcando el punto de conexión al repositorio.
+- ℹ️ El objeto demo `FutViewData` fue eliminado en la Fase 0; las pantallas leen datos reales desde Firestore/ESPN.
 
 ### Arquitectura (creada en la Fase 1)
-- **`data/repository/`**: contratos `TeamRepository`, `StadiumRepository`, `MatchRepository`, `UserRepository` (exponen `Flow`). Implementaciones vacías temporales (`Empty*Repository`) para catálogos hasta la Fase 3. **Fase 2**: `AuthRepository` + `FirebaseAuthRepository` y `FirestoreUserRepository` (colección `users` con rol) conectados en `AppContainer`.
+- **`data/repository/`**: contratos e implementaciones Firestore para `TeamRepository`, `StadiumRepository`, `MatchRepository`, `UserRepository` y favoritos; `AuthRepository` + `FirebaseAuthRepository`; `EspnSyncRepository` para datos de fútbol. Todos conectados en `AppContainer`.
 - **`data/model/FirestoreDtos.kt`**: DTOs de Firestore (`TeamDoc`, `StadiumDoc` con `GeoPoint`, `MatchDoc`, `StandingDoc`, `UserDoc`) con mapeadores a los modelos de dominio.
-- **`data/AppContainer.kt`**: inyección manual; punto único para cambiar los stubs por implementaciones de Firestore.
+- **`data/AppContainer.kt`**: inyección manual y punto único de construcción de repositorios/servicios.
 - **`ui/viewmodel/`**: `UiState` (Loading/Success/Error) + ViewModels de las 5 pestañas (Partidos, Resultados, Equipos, Estadios, Favoritos) y de los formularios admin (Equipos, Estadios, Usuarios, Partidos/Fixture, Acta), todos con reintento. **Fase 2**: `AuthStateViewModel` (sesión global) y ViewModels de Login, Registro, Recuperar, Nueva contraseña y Reenvío de enlace.
 - **Estados de carga/error en UI**: `LoadingState` (carga) y `FirestoreErrorBanner` (aviso pasivo de problema con la base de datos, con reintento) integrados en todas las pantallas que leen datos; `ConnectionErrorScreen` se reserva para un corte total de conexión.
 - **Sesión y rutas (Fase 2)**: splash mientras se resuelve la sesión; rutas de acceso (login/registro/recuperar) solo sin sesión; el resto de la app solo con sesión; acceso a Administración filtrado por rol.
@@ -64,7 +64,7 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 ### Configuración
 - ✅ `app/google-services.json` presente y con el package correcto.
 - ✅ Tema, colores y tipografías propios (`ui/theme/`).
-- ✅ Componentes reutilizables (`ui/components/FutViewComponents.kt`, 1.600 líneas).
+- ✅ Componentes reutilizables (`ui/components/FutViewComponents.kt`) con paleta clara/oscura y cabeceras que muestran el usuario autenticado.
 
 ---
 
@@ -85,7 +85,7 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
   - `teams` (nombre, corto, ciudad, `stadiumId` + `stadiumName` denormalizado)
   - `stadiums` (nombre, comuna, dirección, capacidad, `location: GeoPoint`, equipo local)
   - `matches` (dayLabel/shortDate/matchday, hora, estado, goles, ids de equipos, nombre de estadio)
-  - `standings` → **calculada en cliente** a partir de `matches` finalizados (no se almacena)
+  - `standings/2026` → tabla oficial de ESPN, con parser de Wikipedia como respaldo manual
   - `users` (uid, nombre, correo, rol)
   - `users/{uid}/favorites` (favoritos por usuario)
   - `invites` (invitaciones al panel, pendientes de alta real)
@@ -98,22 +98,21 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - [x] Offline: persistencia de Firestore activada en `FutViewApplication` (caché de 64 MB).
 - [ ] **Desplegar y probar las reglas** (requiere Firebase CLI): `firebase deploy --only firestore:rules`.
 
-### C. Mapas y ubicación de estadios — ❌ No implementado
-- [ ] Dependencia `play-services-maps` + `maps-compose` (librería oficial de Compose).
-- [ ] Obtener **API key de Maps SDK for Android** y agregarla al manifest (`meta-data com.google.android.geo.API_KEY`) — idealmente vía `local.properties` + BuildConfig, no hardcodeada.
-- [ ] Mapa embebido en `StadiumDetailScreen` con marcador del estadio (usar `GeoPoint`).
-- [ ] (Opcional) Mapa general con todos los estadios en `StadiumsScreen`.
-- [ ] Mínimo viable rápido: botón "Abrir dirección en mapas" con Intent de `geo:` (URI con lat/lng ya presentes en los datos).
-- [ ] Permisos de ubicación solo si se agrega "distancia hasta el estadio" o estadio más cercano.
+### C. Mapas y ubicación de estadios — ✅ Implementado (MapLibre + OpenFreeMap)
+- [x] Dependencia MapLibre 11.5 para Compose.
+- [x] Tiles vectoriales de OpenFreeMap: gratuito, ilimitado, sin API key ni tarjeta.
+- [x] Mapa embebido en `StadiumDetailScreen` con marcador del estadio (coordenadas reales; si no tiene, se oculta).
+- [x] Botón "Cómo llegar en mapas" con Intent `geo:`.
+- [x] Sin permisos de ubicación (no se usa geolocalización).
 
-### D. Arquitectura y calidad — ❌ No implementado
-- [x] Estructura de capas: `data/repository` (contratos + stubs temporales), `data/model` (DTOs Firestore), `ui/viewmodel` (ViewModels + UiState). Creada en Fase 1.
-- [x] ViewModels con `viewModelScope` y estados UI (`UiState`: Loading/Success/Error) + aviso pasivo de error (`FirestoreErrorBanner`). Fase 1.
-- [ ] Inyección manual (o Hilt si el proyecto crece).
-- [ ] Persistir favoritos del usuario en Firestore (hoy en memoria).
-- [ ] Panel admin conectado: crear/editar/eliminar documentos reales en Firestore (hoy solo escriben en estados locales si es que eso).
-- [ ] Validación y feedback real en formularios admin.
-- [ ] Tests: unitarios para repos/VM, y al menos smoke tests de Compose.
+### D. Arquitectura y calidad — ⚠️ Base implementada; faltan tests y release
+- [x] Estructura de capas: `data/repository`, `data/model`, `data/AppContainer`, `ui/viewmodel`.
+- [x] ViewModels con `viewModelScope`, estados UI (`UiState`) y aviso pasivo de error (`FirestoreErrorBanner`).
+- [x] Inyección manual mediante `AppContainer`.
+- [x] Favoritos persistidos por usuario en Firestore.
+- [x] Panel admin conectado: crear/editar/eliminar documentos reales en Firestore.
+- [x] Validación y feedback en formularios admin.
+- [ ] Tests: unitarios para repos/VM y smoke tests de Compose.
 - [ ] R8/minify y reglas ProGuard para release.
 
 ### E. Deudas y detalles detectados (menores pero concretos)
@@ -172,6 +171,8 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 
 ### Fase 5 — Pulido y release
 - [x] Dataset completo del fútbol chileno (Liga de Primera 2026) desde ESPN: 16 clubes, 240 partidos y tabla oficial.
+- [x] Limpieza de UI: eliminados `DemoBanner` y textos de mockup/demostración; cabeceras muestran el usuario real; menú reducido a modo oscuro, administración/estado y cierre de sesión.
+- [x] Modo oscuro persistente con `SharedPreferences`, paleta dinámica y controles compatibles.
 - [ ] Tests básicos, README decente, icono de app, `applicationId` final.
 - [ ] Build release con minify y verificación.
 
@@ -190,3 +191,4 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 | 24-nov-2026 | **Hotfix PERMISSION_DENIED**: los listeners de navegación se suscribían sin sesión y sin manejo de errores → la app moría al entrar al login. Ahora no se suscriben listeners sin sesión y las denegaciones se absorben (`catch`); los banners por pantalla informan. Verificado en dispositivo: app viva en login sin crashes. |
 | 24-nov-2026 | **Mapa MapLibre + OpenFreeMap**: se reemplazó osmdroid porque la política del tile server público de OSM no permite apps nativas en producción. Tiles vectoriales gratis, ilimitados y sin clave. Verificado en dispositivo. |
 | 24-nov-2026 | **ESPN reemplaza a API-Football**: `EspnSyncRepository` descarga los 240 partidos de la temporada 2026 (fecha/hora real, estado y marcador) y la tabla oficial, reutiliza equipos/estadios del seed y elimina los registros heredados (`af-*` y los 5 resultados del seed). Sync automática cada 6 h + botón admin. API-Football y su clave fueron eliminadas. Verificado en dispositivo: fixture y resultados reales visibles, 0 crashes. |
+| 24-nov-2026 | **Limpieza de UI + modo oscuro**: eliminados `DemoBanner`, textos de mockup/demostración y botones sin uso (perfil, cuenta, configuración, notificaciones, ayuda, contacto). Cabeceras y admin usan el usuario autenticado real; menú reducido a switch persistente de modo oscuro, administración/estado y logout. Paleta clara/oscura y controles dinámicos. Build debug OK, instalada en dispositivo y sin crashes. |

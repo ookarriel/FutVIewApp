@@ -44,7 +44,6 @@ import com.example.futview.ui.components.LoadingState
 import com.example.futview.ui.viewmodel.TeamsViewModel
 import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.Crest
-import com.example.futview.ui.components.DemoBanner
 import com.example.futview.ui.components.EmptyState
 import com.example.futview.ui.components.FilterDropdownPill
 import com.example.futview.ui.components.FilterPill
@@ -108,7 +107,6 @@ fun TeamsScreen(
                 else -> {}
             }
 
-            item { DemoBanner() }
 
             item {
                 FutViewSearchField(
@@ -196,7 +194,7 @@ fun TeamsScreen(
 
             item {
                 InfoNote(
-                    text = "Toca la estrella para seguir un club y encontrarlo en tus favoritos. Los escudos son ilustrativos."
+                    text = "Toca la estrella para seguir un club y encontrarlo en tus favoritos."
                 )
             }
         }
