@@ -43,7 +43,7 @@ import androidx.compose.ui.unit.dp
 import com.example.futview.data.Team
 import com.example.futview.ui.components.FirestoreErrorBanner
 import com.example.futview.ui.components.LoadingState
-import com.example.futview.ui.viewmodel.ApiSyncViewModel
+import com.example.futview.ui.viewmodel.EspnSyncViewModel
 import com.example.futview.ui.viewmodel.ClubFormViewModel
 import com.example.futview.ui.viewmodel.SeedViewModel
 import com.example.futview.ui.viewmodel.UiState
@@ -93,13 +93,13 @@ fun ClubFormScreen() {
         }
     }
 
-    val apiSyncViewModel: ApiSyncViewModel = viewModel(factory = ApiSyncViewModel.Factory)
-    val apiBusy by apiSyncViewModel.busy.collectAsStateWithLifecycle()
-    val apiMessage by apiSyncViewModel.message.collectAsStateWithLifecycle()
+    val espnSyncViewModel: EspnSyncViewModel = viewModel(factory = EspnSyncViewModel.Factory)
+    val apiBusy by espnSyncViewModel.busy.collectAsStateWithLifecycle()
+    val apiMessage by espnSyncViewModel.message.collectAsStateWithLifecycle()
     LaunchedEffect(apiMessage) {
         apiMessage?.let {
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-            apiSyncViewModel.consumeMessage()
+            espnSyncViewModel.consumeMessage()
         }
     }
 
@@ -127,8 +127,8 @@ fun ClubFormScreen() {
 
             item {
                 OutlineButton(
-                    text = if (apiBusy) "Sincronizando…" else "Sincronizar partidos (API-Football)",
-                    onClick = { apiSyncViewModel.sync(context.applicationContext, force = true) },
+                    text = if (apiBusy) "Sincronizando…" else "Sincronizar con ESPN (fixture, resultados y tabla)",
+                    onClick = { espnSyncViewModel.sync(context.applicationContext, force = true) },
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }

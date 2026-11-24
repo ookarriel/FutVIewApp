@@ -40,6 +40,9 @@ import com.example.futview.ui.theme.TextSecondary
 @Composable
 fun ResultDetailScreen(
     match: Match,
+    standings: List<StandingRow>,
+    finishedMatches: Int,
+    totalGoals: Int,
     favorite: Boolean,
     onToggleFavorite: () -> Unit,
     onBack: () -> Unit,
@@ -111,13 +114,13 @@ fun ResultDetailScreen(
                     )
                     Spacer(Modifier.height(14.dp))
                     Text(
-                        text = "${match.home.name} suma 3 puntos. ${match.away.name} permanece sin sumar tras la jornada.",
+                        text = resultSummary(match),
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = "No hay acta de goles ni estadísticas adicionales disponibles para este encuentro de demostración.",
+                        text = "Marcador oficial sincronizado desde ESPN.",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
                     )
@@ -125,12 +128,12 @@ fun ResultDetailScreen(
             }
 
             item {
-                SectionHeader(title = "Tabla de posiciones", trailing = "Jornada ${match.matchday}")
+                SectionHeader(title = "Tabla de posiciones", trailing = "Temporada 2026")
             }
 
             item {
                 InfoPill(
-                    text = "2 partidos finalizados · 4 goles",
+                    text = "$finishedMatches partidos finalizados · $totalGoals goles",
                     icon = Icons.Outlined.CheckCircle,
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
@@ -138,8 +141,7 @@ fun ResultDetailScreen(
 
             item {
                 StandingsTable(
-                    // TODO Fase 3: leer la tabla desde el repositorio de Firestore.
-                    rows = emptyList<StandingRow>(),
+                    rows = standings,
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
@@ -158,5 +160,15 @@ fun ResultDetailScreen(
             selectedIndex = 1,
             onSelect = onSelectTab
         )
+    }
+}
+
+private fun resultSummary(match: Match): String {
+    val home = match.homeGoals ?: return "Marcador pendiente de confirmación."
+    val away = match.awayGoals ?: return "Marcador pendiente de confirmación."
+    return when {
+        home > away -> "${match.home.name} suma 3 puntos; ${match.away.name} no suma."
+        home < away -> "${match.away.name} suma 3 puntos; ${match.home.name} no suma."
+        else -> "Empate: ambos equipos suman 1 punto."
     }
 }

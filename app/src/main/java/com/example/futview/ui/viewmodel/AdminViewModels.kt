@@ -14,8 +14,8 @@ import com.example.futview.data.SystemUser
 import com.example.futview.data.Team
 import com.example.futview.data.model.initialsOf
 import android.content.Context
+import com.example.futview.data.repository.EspnSyncRepository
 import com.example.futview.data.repository.FirestoreSeedRepository
-import com.example.futview.data.repository.ApiFootballSyncRepository
 import com.example.futview.data.repository.MatchRepository
 import com.example.futview.data.repository.StadiumRepository
 import com.example.futview.data.repository.TeamRepository
@@ -489,8 +489,8 @@ class SeedViewModel : ViewModel() {
     }
 }
 
-/** Sincronización diaria con API-Football (botón admin + automática cada 24 h). */
-class ApiSyncViewModel(private val syncRepository: ApiFootballSyncRepository) : ViewModel() {
+/** Sincronización con ESPN (botón admin + automática cada 6 h). */
+class EspnSyncViewModel(private val syncRepository: EspnSyncRepository) : ViewModel() {
 
     private val _busy = MutableStateFlow(false)
     val busy: StateFlow<Boolean> = _busy.asStateFlow()
@@ -520,6 +520,6 @@ class ApiSyncViewModel(private val syncRepository: ApiFootballSyncRepository) : 
     }
 
     companion object {
-        val Factory = viewModelFactory { initializer { ApiSyncViewModel(ApiFootballSyncRepository()) } }
+        val Factory = viewModelFactory { initializer { EspnSyncViewModel(EspnSyncRepository()) } }
     }
 }

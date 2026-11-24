@@ -1,5 +1,3 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -38,16 +36,6 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
-    }
-
-    defaultConfig {
-        // Clave de API-Football desde local.properties (no versionadas).
-        val localProperties = Properties().apply {
-            val file = rootProject.file("local.properties")
-            if (file.exists()) file.inputStream().use { load(it) }
-        }
-        val footballKey = localProperties.getProperty("API_FOOTBALL_KEY") ?: ""
-        buildConfigField("String", "API_FOOTBALL_KEY", "\"$footballKey\"")
     }
 }
 

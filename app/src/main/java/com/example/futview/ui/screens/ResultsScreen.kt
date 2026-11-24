@@ -195,7 +195,7 @@ fun ResultsScreen(
 
             item {
                 InfoNote(
-                    text = "La tabla se calcula con los resultados registrados. Los empates se ordenan por nombre."
+                    text = "Tabla oficial de la temporada 2026, sincronizada desde ESPN. También puedes actualizarla manualmente desde el panel de administración."
                 )
             }
         }

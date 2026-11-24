@@ -53,7 +53,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
-/** Dashboard del panel admin: estado de Auth, Firestore, API-Football y OpenStreetMap. */
+/** Dashboard del panel admin: estado de Auth, Firestore, ESPN y mapas. */
 @Composable
 fun AdminStatusScreen(
     sessionUser: AuthUser?,
@@ -74,7 +74,7 @@ fun AdminStatusScreen(
     ) {
         ScreenHeader(
             title = "Estado del sistema",
-            subtitle = "Auth · Firestore · API-Football · Mapas",
+            subtitle = "Auth · Firestore · ESPN · Mapas",
             onAvatarClick = onBack,
             onBack = onBack
         )
@@ -117,36 +117,32 @@ fun AdminStatusScreen(
 
             item {
                 FormCard(
-                    title = "API-Football",
-                    subtitle = "Cuota del plan gratuito (100 req/día)",
+                    title = "ESPN · Primera División",
+                    subtitle = "Fixture, resultados y tabla · sin clave ni cuota",
                     icon = Icons.Outlined.Sync
                 ) {
-                    val usage = viewModel.apiUsage(context)
-                    StatusChip(
-                        text = if (usage.second > 0) {
-                            "Restantes: ${usage.first} de ${usage.second}"
-                        } else {
-                            "Sin uso registrado"
-                        }
-                    )
+                    val lastSync = viewModel.lastSyncText(context)
+                    StatusChip(text = if (lastSync == "Nunca") "Sin sincronizar" else "Operativo")
                     Spacer(Modifier.height(8.dp))
-                    DetailField(label = "Última sincronización", value = viewModel.lastSyncText(context))
+                    DetailField(label = "Última sincronización", value = lastSync)
                     DetailField(label = "Frecuencia", value = "4 veces al día (cada 6 horas)")
+                    DetailField(label = "Fuente", value = "site.api.espn.com · liga chi.1")
                 }
             }
 
             item {
                 FormCard(
-                    title = "OpenStreetMap (osmdroid)",
-                    subtitle = "Mapas sin costo ni clave",
+                    title = "OpenFreeMap (MapLibre)",
+                    subtitle = "Tiles vectoriales sin costo ni clave",
                     icon = Icons.Outlined.Map
                 ) {
                     StatusChip(text = "Operativo")
                     Spacer(Modifier.height(8.dp))
                     DetailField(
-                        label = "Caché de mapas",
-                        value = "Almacenamiento privado · ${viewModel.cacheSizeMb(context)} MB"
+                        label = "Caché local",
+                        value = "${viewModel.cacheSizeMb(context)} MB"
                     )
+                    DetailField(label = "Política", value = "Permitida para apps en producción")
                 }
             }
 
@@ -182,14 +178,9 @@ class AdminStatusViewModel : ViewModel() {
         }
     }
 
-    fun apiUsage(context: Context): Pair<Int, Int> {
-        val prefs = context.getSharedPreferences("futview_sync", Context.MODE_PRIVATE)
-        return prefs.getInt("usage_remaining", -1) to prefs.getInt("usage_limit", -1)
-    }
-
     fun lastSyncText(context: Context): String {
         val last = context.getSharedPreferences("futview_sync", Context.MODE_PRIVATE)
-            .getLong("last_sync_api_football", 0L)
+            .getLong("last_sync_espn", 0L)
         return if (last == 0L) "Nunca" else {
             val minutes = ((System.currentTimeMillis() - last) / 60000L).toString()
             "Hace $minutes min"
@@ -198,9 +189,7 @@ class AdminStatusViewModel : ViewModel() {
 
     fun cacheSizeMb(context: Context): Long {
         fun dirSize(dir: File?): Long = dir?.walkBottomUp()?.filter { it.isFile }?.sumOf { it.length() } ?: 0
-        val bytes = dirSize(context.getDir("osmdroid", Context.MODE_PRIVATE)) +
-            dirSize(context.getDir("osmdroid_tiles", Context.MODE_PRIVATE))
-        return bytes / (1024L * 1024L)
+        return dirSize(context.cacheDir) / (1024L * 1024L)
     }
 
     companion object {

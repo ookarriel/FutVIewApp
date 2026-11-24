@@ -195,8 +195,9 @@ class FirestoreMatchRepository : MatchRepository {
     ) { standingsDoc, teams, results ->
         // Si existe la tabla oficial (Wikipedia), se usa; si no, se calcula desde los resultados.
         standingsDoc?.rows?.mapIndexed { index, row ->
-            val team = teams.firstOrNull { it.name == row.teamName }
-                ?: Team(id = "wiki-${index + 1}", name = row.teamName, short = row.teamShort, city = "", stadium = "", lastResult = "", nextMatch = "")
+            val normalized = normalizeEntityName(row.teamName)
+            val team = teams.firstOrNull { normalizeEntityName(it.name) == normalized }
+                ?: Team(id = "foreign-${index + 1}", name = row.teamName, short = row.teamShort, city = "", stadium = "", lastResult = "", nextMatch = "")
             StandingRow(index + 1, team, row.played.toInt(), row.points.toInt(), row.goalDifference.toInt())
         }?.takeIf { it.isNotEmpty() }
             ?: computeStandings(teams, results)

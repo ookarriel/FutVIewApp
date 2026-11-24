@@ -27,7 +27,7 @@ import com.example.futview.data.Match
 import com.example.futview.data.Stadium
 import com.example.futview.data.Team
 import com.example.futview.data.model.initialsOf
-import com.example.futview.ui.viewmodel.ApiSyncViewModel
+import com.example.futview.ui.viewmodel.EspnSyncViewModel
 import com.example.futview.ui.viewmodel.AuthStateViewModel
 import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.viewmodel.UserFavoritesViewModel
@@ -128,14 +128,8 @@ fun FutViewApp() {
         return
     }
 
-    val apiSyncViewModel: ApiSyncViewModel = viewModel(factory = ApiSyncViewModel.Factory)
+    val espnSyncViewModel: EspnSyncViewModel = viewModel(factory = EspnSyncViewModel.Factory)
     val appContext = LocalContext.current.applicationContext
-    LaunchedEffect(signedIn) {
-        if (signedIn) {
-            // Actualización diaria silenciosa del fixture (requiere API_FOOTBALL_KEY).
-            apiSyncViewModel.syncIfDue(appContext)
-        }
-    }
 
     val roleFlow = remember(sessionUser?.uid) {
         AppContainer.userRepository.observeUserRole(sessionUser?.uid.orEmpty())
@@ -182,6 +176,21 @@ fun FutViewApp() {
             flowOf(emptyList())
         }
     }.collectAsState(initial = emptyList())
+    val standings by remember(signedIn) {
+        if (signedIn) {
+            AppContainer.matchRepository.observeStandings().catch { emit(emptyList()) }
+        } else {
+            flowOf(emptyList())
+        }
+    }.collectAsState(initial = emptyList())
+
+    // Actualización silenciosa desde ESPN (cada 6 h). Se espera a que existan equipos:
+    // en una instalación nueva primero se siembra el catálogo y luego corre el primer sync.
+    LaunchedEffect(signedIn, teams.isNotEmpty()) {
+        if (signedIn && teams.isNotEmpty()) {
+            espnSyncViewModel.syncIfDue(appContext)
+        }
+    }
 
     val favoritesViewModel: UserFavoritesViewModel = viewModel(factory = UserFavoritesViewModel.Factory)
     val favoritesState by favoritesViewModel.favoriteIds.collectAsStateWithLifecycle()
@@ -541,6 +550,9 @@ fun FutViewApp() {
             if (match != null) {
                 ResultDetailScreen(
                     match = match,
+                    standings = standings,
+                    finishedMatches = results.size,
+                    totalGoals = results.sumOf { (it.homeGoals ?: 0) + (it.awayGoals ?: 0) },
                     favorite = match.id in favoriteMatches,
                     onToggleFavorite = { toggleMatchFavorite(match.id) },
                     onBack = {

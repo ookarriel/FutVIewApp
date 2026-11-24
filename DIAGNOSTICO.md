@@ -154,21 +154,24 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - [x] Favoritos persistidos por usuario en `users/{uid}/favorites` (`UserFavoritesViewModel` + `FavoritesRepository`); con sesión activa se cargan y guardan automáticamente, y desaparecen al cerrar sesión.
 - [x] Reglas de seguridad escritas (`firestore.rules` + `firebase.json`); desplegar con `firebase deploy --only firestore:rules` y probar en consola (acción manual del usuario).
 
-### Fase 4 — Mapas ✅ COMPLETADA — 100% gratuito con OpenStreetMap
-- [x] Mapa con OpenStreetMap vía **osmdroid** (gratuito, sin API key, sin tarjeta ni facturación) — reemplaza a Google Maps, que exige cuenta de facturación.
-- [x] Mapa embebido con marcador en `StadiumDetailScreen` (coordenadas del estadio; si no tiene, se oculta) + user agent y caché de tiles configurados en `FutViewApplication`.
+### Fase 4 — Mapas ✅ COMPLETADA — 100% gratuito con MapLibre + OpenFreeMap
+- [x] Mapa con **MapLibre 11.5 + tiles vectoriales de OpenFreeMap** (gratuito, ilimitado, sin API key ni tarjeta) — reemplaza a Google Maps (exige facturación) y a osmdroid (la política del tile server público de OSM no permite apps nativas en producción).
+- [x] Mapa embebido con marcador en `StadiumDetailScreen` (coordenadas del estadio; si no tiene, se oculta) + inicialización de MapLibre en `FutViewApplication`.
 - [x] Botón "Cómo llegar en mapas" con Intent `geo:` (sin costo, abre la app de mapas del teléfono).
 - [x] Sin permisos de ubicación (no se usa geolocalización).
-- Alternativas evaluadas: Google Maps móvil es gratis e ilimitado desde mar-2025 (tier Essentials) pero exige tarjeta en Google Cloud; MapLibre+OSM es otra opción sin costo.
 
-### Fase 4-B — API de fútbol (evaluación) ✅ Factible
-- **Recomendada: API-Football** (api-sports.io): plan gratuito con 100 req/día, cubre la Liga de Primera de Chile (league 265) con fixture, marcadores y estados. Actualización diaria = 1-2 requests.
-- Alternativa sin registro: TheSportsDB (datos limitados). football-data.org no cubre Chile. Sportmonks: pago.
-- **Implementado**: `data/remote/ApiFootball.kt` (Retrofit) + `ApiFootballSyncRepository` (descarga fixtures 2026 → escribe `matches` con ids "af-*" y equipos del proveedor; timestamps en hora de Chile) + `ApiSyncViewModel` (botón manual en admin + **sincronización automática cada 24 h** al abrir la app con sesión).
-- **Pendiente del usuario**: pegar tu clave en `local.properties` (`API_FOOTBALL_KEY=`). Sin clave, el botón informa cómo hacerlo.
+### Fase 4-B — Datos de fútbol ✅ COMPLETADA con ESPN (gratis, sin clave)
+- **Fuente oficial en uso: ESPN** (`site.api.espn.com`, liga `chi.1`) — sin registro, sin API key y sin cuota.
+- [x] `data/remote/Espn.kt` (Retrofit + DTOs): `scoreboard?dates=2026&limit=500` devuelve los 240 partidos de la temporada con fecha/hora real, estado y marcador; `standings?season=2026` entrega la tabla oficial (PJ, puntos, DG).
+- [x] `EspnSyncRepository`: escribe `matches` con id estable `espn-<eventId>`, reutiliza los equipos/estadios del seed emparejando nombres normalizados (sin duplicar clubes), infiere la jornada (8 partidos por fecha) y escribe `standings/2026`.
+- [x] Sincronización automática cada 6 horas (4 veces al día) al abrir la app con sesión + botón manual **"Sincronizar con ESPN"** en Admin → Equipos.
+- [x] Limpieza automática de documentos heredados de API-Football (`af-*`) y de los 5 resultados del seed inicial, para no duplicar marcadores.
+- [x] `AdminStatusScreen` muestra el estado de Auth, Firestore, última sincronización ESPN y MapLibre/OpenFreeMap.
+- **API-Football eliminada** (código y clave): su plan gratuito solo sirve temporadas 2021–2023, por lo que no podía alimentar la temporada 2026.
+- [x] La tabla de posiciones se lee de `standings/2026` (ESPN) con el parser de Wikipedia como respaldo manual.
 
 ### Fase 5 — Pulido y release
-- [ ] Dataset completo del fútbol chileno (Liga de Primera).
+- [x] Dataset completo del fútbol chileno (Liga de Primera 2026) desde ESPN: 16 clubes, 240 partidos y tabla oficial.
 - [ ] Tests básicos, README decente, icono de app, `applicationId` final.
 - [ ] Build release con minify y verificación.
 
@@ -185,3 +188,5 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 | 24-nov-2026 | **Fase 3 completada**: repositorios Firestore reales para catálogos con CRUD (clubes, estadios con GeoPoint, partidos/fixture, acta con standings calculadas), favoritos persistidos por usuario (`users/{uid}/favorites`) con `UserFavoritesViewModel`, persistencia offline activada (`FutViewApplication`, 64 MB), reglas de seguridad escritas (`firestore.rules` + `firebase.json` — despliegue manual pendiente) y stubs eliminados. Compilación OK. |
 | 24-nov-2026 | **Hotfix crash de arranque**: `FutViewApplication` mezclaba `isPersistenceEnabled = true` (setter deprecado) con `setLocalCacheSettings(...)` — Firestore moderno lanza `IllegalStateException`. Corregido dejando solo `persistentCacheSettings` (la persistencia ya viene activada por defecto). Verificado en dispositivo: la app arranca y queda viva, sin crashes en logcat. |
 | 24-nov-2026 | **Hotfix PERMISSION_DENIED**: los listeners de navegación se suscribían sin sesión y sin manejo de errores → la app moría al entrar al login. Ahora no se suscriben listeners sin sesión y las denegaciones se absorben (`catch`); los banners por pantalla informan. Verificado en dispositivo: app viva en login sin crashes. |
+| 24-nov-2026 | **Mapa MapLibre + OpenFreeMap**: se reemplazó osmdroid porque la política del tile server público de OSM no permite apps nativas en producción. Tiles vectoriales gratis, ilimitados y sin clave. Verificado en dispositivo. |
+| 24-nov-2026 | **ESPN reemplaza a API-Football**: `EspnSyncRepository` descarga los 240 partidos de la temporada 2026 (fecha/hora real, estado y marcador) y la tabla oficial, reutiliza equipos/estadios del seed y elimina los registros heredados (`af-*` y los 5 resultados del seed). Sync automática cada 6 h + botón admin. API-Football y su clave fueron eliminadas. Verificado en dispositivo: fixture y resultados reales visibles, 0 crashes. |

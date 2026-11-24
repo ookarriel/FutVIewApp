@@ -107,7 +107,7 @@ fun MatchDetailScreen(
                     Spacer(Modifier.height(14.dp))
                     DetailField(
                         label = "Sede",
-                        value = "Estadio ${match.stadium}"
+                        value = match.stadium
                     )
                     Spacer(Modifier.height(14.dp))
                     DetailField(
