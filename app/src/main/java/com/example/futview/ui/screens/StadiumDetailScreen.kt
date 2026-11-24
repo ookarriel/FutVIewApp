@@ -34,10 +34,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
+import org.maplibre.android.annotations.MarkerOptions
+import org.maplibre.android.camera.CameraUpdateFactory
+import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.maps.MapView
 import com.example.futview.data.Match
 import com.example.futview.data.Stadium
 import com.example.futview.ui.components.DemoBanner
@@ -238,7 +238,7 @@ fun StadiumDetailScreen(
                     val latitude = stadium.latitude.toDoubleOrNull()
                     val longitude = stadium.longitude.toDoubleOrNull()
 
-                    // Mapa OpenStreetMap (osmdroid, gratuito y sin clave) cuando hay coordenadas.
+                    // Mapa MapLibre + OpenFreeMap (gratuito, sin clave, permitido para apps).
                     if (latitude != null && longitude != null) {
                         AndroidView(
                             modifier = Modifier
@@ -247,17 +247,18 @@ fun StadiumDetailScreen(
                                 .clip(RoundedCornerShape(12.dp)),
                             factory = { mapContext ->
                                 MapView(mapContext).apply {
-                                    setTileSource(TileSourceFactory.MAPNIK)
-                                    setMultiTouchControls(true)
-                                    controller.setZoom(15.5)
-                                    controller.setCenter(GeoPoint(latitude, longitude))
-                                    val marker = Marker(this).apply {
-                                        position = GeoPoint(latitude, longitude)
-                                        setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                                        title = stadium.name
-                                        snippet = stadium.address
+                                    getMapAsync { map ->
+                                        map.setStyle("https://tiles.openfreemap.org/styles/liberty")
+                                        map.moveCamera(
+                                            CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), 15.0)
+                                        )
+                                        map.addMarker(
+                                            MarkerOptions()
+                                                .position(LatLng(latitude, longitude))
+                                                .title(stadium.name)
+                                                .snippet(stadium.address)
+                                        )
                                     }
-                                    overlays.add(marker)
                                 }
                             }
                         )
