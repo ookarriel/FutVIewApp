@@ -79,22 +79,24 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - [x] Colección `users` con rol: se crea al registrarse (`role: "Usuario"`) y se lee vía `FirestoreUserRepository`.
 - [ ] Reglas de seguridad basadas en roles en la consola de Firestore (Fase 3). Promoción a Admin: editar `users/{uid}.role = "Admin"` manualmente en la consola.
 
-### B. Cloud Firestore — ❌ No implementado
+### B. Cloud Firestore — ✅ Implementado en Fase 3
 - [x] Dependencias: `firebase-firestore` (agregada en Fase 1 para el mapeo con `GeoPoint`).
-- [ ] Definir el modelo de colecciones:
-  - `teams` (equipo: nombre, corto, ciudad, estadio ref, escudo/logo)
+- [x] Definir el modelo de colecciones:
+  - `teams` (nombre, corto, ciudad, `stadiumId` + `stadiumName` denormalizado)
   - `stadiums` (nombre, comuna, dirección, capacidad, `location: GeoPoint`, equipo local)
-  - `matches` (fecha/hora `Timestamp`, jornada, local, visita, estado, goles, estadio ref)
-  - `standings` (calculada o derivada de resultados)
-  - `users` (uid, nombre, rol)
-  - `favorites` por usuario (subcolección o array)
+  - `matches` (dayLabel/shortDate/matchday, hora, estado, goles, ids de equipos, nombre de estadio)
+  - `standings` → **calculada en cliente** a partir de `matches` finalizados (no se almacena)
+  - `users` (uid, nombre, correo, rol)
+  - `users/{uid}/favorites` (favoritos por usuario)
+  - `invites` (invitaciones al panel, pendientes de alta real)
 - [x] **Permiso `android.permission.INTERNET` en el Manifest** (agregado en Fase 0).
-- [ ] Capa de repositorios (`TeamRepository`, `MatchRepository`, `StadiumRepository`, `UserRepository`) que reemplace `FutViewData`.
-- [ ] ViewModels por pantalla con `StateFlow` (estado de carga / error / datos) + pantalla `ConnectionErrorScreen` cableada a errores reales.
-- [ ] Reemplazar `String` lat/long por `GeoPoint` en `Stadium`.
-- [ ] Reglas de seguridad de Firestore (lectura pública, escritura solo admin/editor).
-- [ ] Índices compuestos si los queries lo requieren.
-- [ ] Offline: habilitar persistencia de Firestore si se quiere soporte sin conexión.
+- [x] Capa de repositorios completa: `FirestoreTeamRepository`, `FirestoreStadiumRepository`, `FirestoreMatchRepository` (con CRUD + tabla de posiciones calculada) y `FirestoreUserRepository`; conectados en `AppContainer` (los stubs se eliminaron).
+- [x] ViewModels por pantalla con `StateFlow` (hecho en Fase 1) + `FirestoreErrorBanner` pasivo en errores.
+- [x] GeoPoint en el DTO de estadios (`StadiumDoc.location`); el modelo de UI mantiene lat/long como texto para mostrar.
+- [x] Reglas de seguridad: `firestore.rules` + `firebase.json` (lectura autenticada; escritura de catálogos solo Admin/Editor; rol solo Admin; favoritos solo dueño).
+- [x] Índices compuestos: no se requieren con las consultas actuales (colecciones completas ordenadas en cliente).
+- [x] Offline: persistencia de Firestore activada en `FutViewApplication` (caché de 64 MB).
+- [ ] **Desplegar y probar las reglas** (requiere Firebase CLI): `firebase deploy --only firestore:rules`.
 
 ### C. Mapas y ubicación de estadios — ❌ No implementado
 - [ ] Dependencia `play-services-maps` + `maps-compose` (librería oficial de Compose).
@@ -146,11 +148,11 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - [x] Persistencia de sesión (`AuthStateListener`; arranque en HOME con sesión activa y splash mientras resuelve) y logout real (menú y configuración).
 - [x] Colección `users` con rol: documento creado al registrarse; `observeUserRole` en vivo; panel admin solo para Admin/Editor (item oculto en el menú + pantalla "Acceso restringido" en la ruta). Datos reales de nombre/email en menú y perfil.
 
-### Fase 3 — Firestore
-- [ ] Cargar equipos, estadios, partidos y resultados reales desde Firestore.
-- [ ] Formularios admin escribiendo/actualizando/borrando documentos.
-- [ ] Favoritos persistidos por usuario.
-- [ ] Reglas de seguridad + prueba de las reglas.
+### Fase 3 — Firestore ✅ COMPLETADA
+- [x] Cargar equipos, estadios, partidos y resultados reales desde Firestore (repos `Firestore*` con listeners en vivo; tabla de posiciones calculada desde los resultados; nombres de estadio/equipo denormalizados).
+- [x] Formularios admin escribiendo/actualizando/borrando: Clubes (crear/editar/eliminar tocando una fila), Estadios (ídem, con GeoPoint), Partidos (programar con jornada + fecha parseada a español, y eliminar desde el fixture seleccionado), Acta (actualizar marcador y estado del partido), Usuarios (cambiar rol / quitar del panel) e Invitaciones (colección `invites`; la alta real del usuario requiere Cloud Function o consola).
+- [x] Favoritos persistidos por usuario en `users/{uid}/favorites` (`UserFavoritesViewModel` + `FavoritesRepository`); con sesión activa se cargan y guardan automáticamente, y desaparecen al cerrar sesión.
+- [x] Reglas de seguridad escritas (`firestore.rules` + `firebase.json`); desplegar con `firebase deploy --only firestore:rules` y probar en consola (acción manual del usuario).
 
 ### Fase 4 — Mapas
 - [ ] API key + dependencias Maps Compose.
@@ -173,3 +175,4 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 | 24-nov-2026 | **Fase 0 completada**: limpieza de `build.gradle.kts` + permiso `INTERNET` (commit `f361685`); eliminados los datos hardcodeados (`FutViewData` → `data/Models.kt`), credenciales, favoritos y notificaciones demo; pantallas quedan con estados vacíos y `TODO Fase 3` marcando la conexión al repositorio. Compilación OK. |
 | 24-nov-2026 | **Fase 1 completada**: capa de datos (`data/repository` con contratos + stubs, `data/model` con DTOs Firestore/GeoPoint, `data/AppContainer` DI manual), dependencias `firebase-firestore` + `lifecycle-viewmodel-compose` + `lifecycle-runtime-compose`, `UiState` (Loading/Success/Error) y 10 ViewModels (5 pestañas + 5 admin) con reintento; estados de carga e integrado el aviso pasivo de error de Firebase (`FirestoreErrorBanner`) en todas las pantallas con datos. Compilación OK. |
 | 24-nov-2026 | **Fase 2 completada**: Firebase Auth real (login, registro con verificación de email, recuperación y cambio de contraseña), sesión persistente con splash de arranque, logout real, errores de auth traducidos a español; colección `users` con rol creada al registrarse y leída en vivo; panel admin restringido a Admin/Editor; nombre/email reales en menú y perfil. Nota: `firebase-auth` fijada a 24.0.1 (la 25 del BOM exige Kotlin 2.4). Compilación OK. |
+| 24-nov-2026 | **Fase 3 completada**: repositorios Firestore reales para catálogos con CRUD (clubes, estadios con GeoPoint, partidos/fixture, acta con standings calculadas), favoritos persistidos por usuario (`users/{uid}/favorites`) con `UserFavoritesViewModel`, persistencia offline activada (`FutViewApplication`, 64 MB), reglas de seguridad escritas (`firestore.rules` + `firebase.json` — despliegue manual pendiente) y stubs eliminados. Compilación OK. |

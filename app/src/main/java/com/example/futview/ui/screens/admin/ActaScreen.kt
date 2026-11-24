@@ -25,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -78,6 +79,14 @@ fun ActaScreen() {
     // TODO Fase 3: guardar el acta en Firestore al confirmar.
     val matches = (matchesState as? UiState.Success)?.data.orEmpty()
     val standings = (standingsState as? UiState.Success)?.data.orEmpty()
+
+    val message by viewModel.message.collectAsStateWithLifecycle()
+    LaunchedEffect(message) {
+        message?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.consumeMessage()
+        }
+    }
     val matchLabels = matches.associate { it.id to "${it.home.name} vs. ${it.away.name}" }
     val selectedMatch = matches.firstOrNull { it.id == selectedMatchId }
     val blankTeam = Team(id = "", name = "", short = "", city = "", stadium = "", lastResult = "", nextMatch = "")
@@ -109,7 +118,12 @@ fun ActaScreen() {
                         value = matchLabels[selectedMatchId] ?: "",
                         options = matchLabels.values.toList(),
                         onSelect = { label ->
-                            selectedMatchId = matchLabels.entries.firstOrNull { it.value == label }?.key
+                            val id = matchLabels.entries.firstOrNull { it.value == label }?.key
+                            selectedMatchId = id
+                            matches.firstOrNull { it.id == id }?.let { selected ->
+                                homeGoals = selected.homeGoals?.toString() ?: ""
+                                awayGoals = selected.awayGoals?.toString() ?: ""
+                            }
                         }
                     )
 
@@ -182,7 +196,7 @@ fun ActaScreen() {
                         text = "Actualizar Tabla",
                         icon = Icons.Outlined.Refresh,
                         onClick = {
-                            Toast.makeText(context, "Tabla actualizada", Toast.LENGTH_SHORT).show()
+                            viewModel.updateResult(selectedMatchId, homeGoals, awayGoals, statusIndex)
                         }
                     )
                 }

@@ -25,9 +25,10 @@ data class TeamDoc(
     val name: String = "",
     val short: String = "",
     val city: String = "",
-    val stadiumId: String = ""
+    val stadiumId: String = "",
+    val stadiumName: String = ""
 ) {
-    fun toModel(id: String, stadiumName: String = ""): Team = Team(
+    fun toModel(id: String): Team = Team(
         id = id,
         name = name,
         short = short,
@@ -45,9 +46,10 @@ data class StadiumDoc(
     val capacity: Long = 0,
     val address: String = "",
     val homeTeamId: String = "",
+    val homeTeamName: String = "",
     val location: GeoPoint? = null
 ) {
-    fun toModel(id: String, homeTeamName: String = ""): Stadium = Stadium(
+    fun toModel(id: String): Stadium = Stadium(
         id = id,
         name = name,
         city = city,
@@ -116,7 +118,8 @@ data class UserDoc(
     val email: String = "",
     val role: String = "Usuario"
 ) {
-    fun toModel(): SystemUser = SystemUser(
+    fun toModel(uid: String): SystemUser = SystemUser(
+        uid = uid,
         name = name,
         email = email,
         role = role,

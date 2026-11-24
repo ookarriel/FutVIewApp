@@ -9,6 +9,7 @@ import com.example.futview.data.Match
 import com.example.futview.data.Stadium
 import com.example.futview.data.StandingRow
 import com.example.futview.data.Team
+import com.example.futview.data.repository.FavoritesRepository
 import com.example.futview.data.repository.MatchRepository
 import com.example.futview.data.repository.StadiumRepository
 import com.example.futview.data.repository.TeamRepository
@@ -16,8 +17,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 private const val STOP_TIMEOUT = 5_000L
 
@@ -142,6 +146,39 @@ class FavoritesViewModel(
                     AppContainer.stadiumRepository
                 )
             }
+        }
+    }
+}
+
+/**
+ * Favoritos del usuario autenticado, persistidos en Firestore.
+ * Expone el conjunto de ids con prefijo de tipo ("team:x", "match:y", "stadium:z").
+ */
+class UserFavoritesViewModel(private val favoritesRepository: FavoritesRepository) : ViewModel() {
+
+    private val authRepository = AppContainer.authRepository
+
+    val favoriteIds: StateFlow<UiState<Set<String>>> = authRepository.observeAuth()
+        .flatMapLatest { user ->
+            val favoritesFlow: Flow<Set<String>> = if (user == null) {
+                flowOf(emptySet())
+            } else {
+                favoritesRepository.observeFavorites(user.uid)
+            }
+            favoritesFlow.toUiState()
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT), UiState.Loading)
+
+    fun toggle(uid: String?, type: String, id: String) {
+        if (uid.isNullOrBlank()) return
+        viewModelScope.launch {
+            favoritesRepository.toggle(uid, "$type:$id")
+        }
+    }
+
+    companion object {
+        val Factory = viewModelFactory {
+            initializer { UserFavoritesViewModel(AppContainer.favoritesRepository) }
         }
     }
 }

@@ -54,6 +54,7 @@ data class StandingRow(
 )
 
 data class SystemUser(
+    val uid: String = "",
     val name: String,
     val email: String,
     val role: String,

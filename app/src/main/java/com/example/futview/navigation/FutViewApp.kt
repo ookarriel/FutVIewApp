@@ -27,6 +27,7 @@ import com.example.futview.data.Team
 import com.example.futview.data.model.initialsOf
 import com.example.futview.ui.viewmodel.AuthStateViewModel
 import com.example.futview.ui.viewmodel.UiState
+import com.example.futview.ui.viewmodel.UserFavoritesViewModel
 import com.example.futview.ui.components.AdminBottomBar
 import com.example.futview.ui.components.FutViewBottomBar
 import com.example.futview.ui.components.ScreenHeader
@@ -102,10 +103,6 @@ private enum class AdminTab(val title: String, val subtitle: String) {
     USUARIOS("Usuarios", "Controla los accesos al panel de administración.")
 }
 
-private fun MutableList<String>.toggle(id: String) {
-    if (!remove(id)) add(id)
-}
-
 @Composable
 fun FutViewApp() {
     val authViewModel: AuthStateViewModel = viewModel(factory = AuthStateViewModel.Factory)
@@ -145,9 +142,16 @@ fun FutViewApp() {
     val upcomingMatches by AppContainer.matchRepository.observeUpcomingMatches().collectAsState(initial = emptyList())
     val results by AppContainer.matchRepository.observeResults().collectAsState(initial = emptyList())
 
-    val favoriteTeams = remember { mutableStateListOf<String>() }
-    val favoriteMatches = remember { mutableStateListOf<String>() }
-    val favoriteStadiums = remember { mutableStateListOf<String>() }
+    val favoritesViewModel: UserFavoritesViewModel = viewModel(factory = UserFavoritesViewModel.Factory)
+    val favoritesState by favoritesViewModel.favoriteIds.collectAsStateWithLifecycle()
+    val favoriteIds = (favoritesState as? UiState.Success)?.data.orEmpty()
+    val favoriteTeams = favoriteIds.filter { it.startsWith("team:") }.map { it.removePrefix("team:") }
+    val favoriteMatches = favoriteIds.filter { it.startsWith("match:") }.map { it.removePrefix("match:") }
+    val favoriteStadiums = favoriteIds.filter { it.startsWith("stadium:") }.map { it.removePrefix("stadium:") }
+
+    val toggleTeamFavorite: (String) -> Unit = { favoritesViewModel.toggle(sessionUser?.uid, "team", it) }
+    val toggleMatchFavorite: (String) -> Unit = { favoritesViewModel.toggle(sessionUser?.uid, "match", it) }
+    val toggleStadiumFavorite: (String) -> Unit = { favoritesViewModel.toggle(sessionUser?.uid, "stadium", it) }
 
     val selectMainTab: (Int) -> Unit = { index ->
         tab = MainTab.entries[index]
@@ -277,28 +281,28 @@ fun FutViewApp() {
                     MainTab.PARTIDOS -> MatchesScreen(
                         favoriteTeamIds = favoriteTeams,
                         favoriteMatchIds = favoriteMatches,
-                        onToggleMatchFavorite = { favoriteMatches.toggle(it) },
+                        onToggleMatchFavorite = { toggleMatchFavorite(it) },
                         onAvatarClick = { route = Route.MENU },
                         onMatchClick = openMatchDetail
                     )
 
                     MainTab.RESULTADOS -> ResultsScreen(
                         favoriteMatchIds = favoriteMatches,
-                        onToggleMatchFavorite = { favoriteMatches.toggle(it) },
+                        onToggleMatchFavorite = { toggleMatchFavorite(it) },
                         onAvatarClick = { route = Route.MENU },
                         onResultClick = openResultDetail
                     )
 
                     MainTab.EQUIPOS -> TeamsScreen(
                         favoriteTeamIds = favoriteTeams,
-                        onToggleTeamFavorite = { favoriteTeams.toggle(it) },
+                        onToggleTeamFavorite = { toggleTeamFavorite(it) },
                         onAvatarClick = { route = Route.MENU },
                         onTeamClick = openTeamDetail
                     )
 
                     MainTab.ESTADIOS -> StadiumsScreen(
                         favoriteStadiumIds = favoriteStadiums,
-                        onToggleStadiumFavorite = { favoriteStadiums.toggle(it) },
+                        onToggleStadiumFavorite = { toggleStadiumFavorite(it) },
                         onAvatarClick = { route = Route.MENU },
                         onStadiumClick = openStadiumDetail
                     )
@@ -307,9 +311,9 @@ fun FutViewApp() {
                         favoriteTeamIds = favoriteTeams,
                         favoriteMatchIds = favoriteMatches,
                         favoriteStadiumIds = favoriteStadiums,
-                        onToggleTeamFavorite = { favoriteTeams.toggle(it) },
-                        onToggleMatchFavorite = { favoriteMatches.toggle(it) },
-                        onToggleStadiumFavorite = { favoriteStadiums.toggle(it) },
+                        onToggleTeamFavorite = { toggleTeamFavorite(it) },
+                        onToggleMatchFavorite = { toggleMatchFavorite(it) },
+                        onToggleStadiumFavorite = { toggleStadiumFavorite(it) },
                         onAvatarClick = { route = Route.MENU },
                         onExploreTeams = { selectMainTab(MainTab.EQUIPOS.ordinal) },
                         onViewMatches = { selectMainTab(MainTab.PARTIDOS.ordinal) }
@@ -403,9 +407,7 @@ fun FutViewApp() {
                     when (adminTab) {
                         AdminTab.EQUIPOS -> ClubFormScreen()
                         AdminTab.ESTADIOS -> StadiumFormScreen()
-                        AdminTab.FIXTURE -> MatchFormScreen(
-                            onDelete = { route = Route.CONFIRM_DELETE }
-                        )
+                        AdminTab.FIXTURE -> MatchFormScreen()
                         AdminTab.RESULTADOS -> ActaScreen()
                         AdminTab.USUARIOS -> UserFormScreen(
                             onInviteUser = { route = Route.INVITE_USER }
@@ -467,7 +469,7 @@ fun FutViewApp() {
                 MatchDetailScreen(
                     match = match,
                     favorite = match.id in favoriteMatches,
-                    onToggleFavorite = { favoriteMatches.toggle(match.id) },
+                    onToggleFavorite = { toggleMatchFavorite(match.id) },
                     onBack = {
                         tab = MainTab.PARTIDOS
                         route = Route.HOME
@@ -485,7 +487,7 @@ fun FutViewApp() {
                 ResultDetailScreen(
                     match = match,
                     favorite = match.id in favoriteMatches,
-                    onToggleFavorite = { favoriteMatches.toggle(match.id) },
+                    onToggleFavorite = { toggleMatchFavorite(match.id) },
                     onBack = {
                         tab = MainTab.RESULTADOS
                         route = Route.HOME
@@ -508,9 +510,9 @@ fun FutViewApp() {
                         it.home.id == team.id || it.away.id == team.id
                     },
                     favorite = team.id in favoriteTeams,
-                    onToggleFavorite = { favoriteTeams.toggle(team.id) },
+                    onToggleFavorite = { toggleTeamFavorite(team.id) },
                     favoriteMatchIds = favoriteMatches,
-                    onToggleMatchFavorite = { favoriteMatches.toggle(it) },
+                    onToggleMatchFavorite = { toggleMatchFavorite(it) },
                     onBack = {
                         tab = MainTab.EQUIPOS
                         route = Route.HOME
@@ -533,9 +535,9 @@ fun FutViewApp() {
                         it.stadium.startsWith(stadium.name)
                     },
                     favorite = stadium.id in favoriteStadiums,
-                    onToggleFavorite = { favoriteStadiums.toggle(stadium.id) },
+                    onToggleFavorite = { toggleStadiumFavorite(stadium.id) },
                     favoriteMatchIds = favoriteMatches,
-                    onToggleMatchFavorite = { favoriteMatches.toggle(it) },
+                    onToggleMatchFavorite = { toggleMatchFavorite(it) },
                     onBack = {
                         tab = MainTab.ESTADIOS
                         route = Route.HOME

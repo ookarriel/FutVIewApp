@@ -20,16 +20,22 @@ import androidx.compose.material.icons.outlined.Send
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.futview.ui.viewmodel.InviteUserViewModel
 import com.example.futview.ui.components.AdminBottomBar
 import com.example.futview.ui.components.FormCard
 import com.example.futview.ui.components.FormDropdown
@@ -48,6 +54,17 @@ fun InviteUserScreen(
     onSelectTab: (Int) -> Unit
 ) {
     SetStatusBarAppearance(lightIcons = true)
+
+    val context = LocalContext.current
+    val viewModel: InviteUserViewModel = viewModel(factory = InviteUserViewModel.Factory)
+    val busy by viewModel.busy.collectAsStateWithLifecycle()
+    val message by viewModel.message.collectAsStateWithLifecycle()
+    LaunchedEffect(message) {
+        message?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.consumeMessage()
+        }
+    }
 
     var name by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
@@ -158,8 +175,8 @@ fun InviteUserScreen(
                     Spacer(Modifier.height(18.dp))
 
                     PrimaryButton(
-                        text = "Enviar invitación",
-                        onClick = {},
+                        text = if (busy) "Enviando…" else "Enviar invitación",
+                        onClick = { viewModel.createInvite(email.trim(), role) },
                         icon = Icons.Outlined.Send
                     )
 

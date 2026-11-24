@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -65,6 +66,7 @@ fun StadiumFormScreen() {
     val context = LocalContext.current
 
     var name by rememberSaveable { mutableStateOf("") }
+    var city by rememberSaveable { mutableStateOf("") }
     var address by rememberSaveable { mutableStateOf("") }
     var capacity by rememberSaveable { mutableStateOf("") }
     var latitude by rememberSaveable { mutableStateOf("") }
@@ -74,6 +76,14 @@ fun StadiumFormScreen() {
     val stadiumsState by viewModel.stadiums.collectAsStateWithLifecycle()
     val stadiums = (stadiumsState as? UiState.Success)?.data.orEmpty()
     var enabled by rememberSaveable { mutableStateOf(true) }
+    var editingStadiumId by rememberSaveable { mutableStateOf<String?>(null) }
+    val message by viewModel.message.collectAsStateWithLifecycle()
+    LaunchedEffect(message) {
+        message?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.consumeMessage()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -90,13 +100,19 @@ fun StadiumFormScreen() {
             item {
                 FormCard(
                     title = "Ficha del estadio",
-                    subtitle = "Registro seleccionado · Monumental",
+                    subtitle = if (editingStadiumId != null) "Editando la sede seleccionada" else "Nueva sede",
                     icon = Icons.Outlined.AccountBalance,
                     modifier = Modifier.padding(horizontal = 20.dp)
                 ) {
                     FormLabel("Nombre del Estadio")
                     Spacer(Modifier.height(8.dp))
                     FormTextField(value = name, onValueChange = { name = it })
+
+                    Spacer(Modifier.height(18.dp))
+
+                    FormLabel("Comuna")
+                    Spacer(Modifier.height(8.dp))
+                    FormTextField(value = city, onValueChange = { city = it })
 
                     Spacer(Modifier.height(18.dp))
 
@@ -219,13 +235,29 @@ fun StadiumFormScreen() {
 
                     AdminFormActions(
                         onSave = {
-                            Toast.makeText(context, "Estadio guardado", Toast.LENGTH_SHORT).show()
+                            val id = editingStadiumId
+                            if (id == null) {
+                                viewModel.createStadium(name, city, capacity, address, latitude, longitude)
+                            } else {
+                                viewModel.updateStadium(id, name, city, capacity, address, latitude, longitude)
+                            }
                         },
                         onEdit = {
-                            Toast.makeText(context, "Edición habilitada", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                if (editingStadiumId != null) {
+                                    "Editando la sede seleccionada."
+                                } else {
+                                    "Toca una sede de la lista para cargarla al formulario."
+                                },
+                                Toast.LENGTH_SHORT
+                            ).show()
                         },
                         onDelete = {
-                            Toast.makeText(context, "Estadio eliminado", Toast.LENGTH_SHORT).show()
+                            editingStadiumId?.let { viewModel.deleteStadium(it) }
+                                ?: run {
+                                    Toast.makeText(context, "Toca una sede de la lista para eliminarla.", Toast.LENGTH_SHORT).show()
+                                }
                         }
                     )
                 }
@@ -282,6 +314,15 @@ fun StadiumFormScreen() {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .clickable {
+                                    editingStadiumId = stadium.id
+                                    name = stadium.name
+                                    city = stadium.city
+                                    address = stadium.address
+                                    capacity = stadium.capacity.takeIf { it > 0 }?.toString() ?: ""
+                                    latitude = stadium.latitude
+                                    longitude = stadium.longitude
+                                }
                                 .padding(horizontal = 14.dp, vertical = 13.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {

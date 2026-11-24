@@ -1,0 +1,61 @@
+rules_version = '2';
+
+// Reglas de seguridad de Firestore para FutView.
+// Despliegue: `firebase deploy --only firestore:rules` (requiere Firebase CLI autenticado).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Rol del usuario en la colección `users`: "Admin", "Editor" o "Usuario".
+    function role() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    function isAdmin() {
+      return request.auth != null && role() in ['Admin', 'Editor'];
+    }
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Catálogos públicos para usuarios autenticados; escritura solo Admin/Editor.
+    match /teams/{teamId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /stadiums/{stadiumId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /matches/{matchId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Perfil de usuario: uno mismo lee lo suyo; los roles solo los cambia un Admin.
+    match /users/{userId} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      // El registro crea su propio documento con rol base "Usuario".
+      allow create: if isSignedIn() && request.auth.uid == userId
+                    && request.resource.data.role == 'Usuario';
+      // Cambiar rol o eliminar documentos de usuarios: solo Admin.
+      allow update, delete: if request.auth != null
+                            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+    }
+
+    // Favoritos personales por usuario.
+    match /users/{userId}/favorites/{favoriteId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Invitaciones al panel de administración.
+    match /invites/{inviteId} {
+      allow read: if request.auth != null
+                  && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Admin', 'Editor'];
+      allow create: if request.auth != null
+                    && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Admin', 'Editor'];
+      allow update, delete: if request.auth != null
+                            && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+    }
+  }
+}

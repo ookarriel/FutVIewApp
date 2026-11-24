@@ -27,7 +27,7 @@ class FirestoreUserRepository : UserRepository {
                 return@addSnapshotListener
             }
             val users = snapshot?.documents
-                ?.mapNotNull { it.toObject(UserDoc::class.java)?.toModel() }
+                ?.mapNotNull { it.toObject(UserDoc::class.java)?.toModel(it.id) }
                 .orEmpty()
             trySend(users)
         }
@@ -63,9 +63,36 @@ class FirestoreUserRepository : UserRepository {
         Result.failure(throwable)
     }
 
+    override suspend fun updateRole(uid: String, role: String): Result<Unit> = authResult {
+        usersCollection.document(uid).update("role", role).await()
+    }
+
+    override suspend fun removeUserDoc(uid: String): Result<Unit> = authResult {
+        usersCollection.document(uid).delete().await()
+    }
+
+    override suspend fun createInvite(email: String, role: String): Result<Unit> = authResult {
+        Firebase.firestore.collection("invites").document().set(
+            mapOf(
+                "email" to email,
+                "role" to role,
+                "status" to "PENDIENTE",
+                "createdAt" to System.currentTimeMillis()
+            )
+        ).await()
+    }
+
     companion object {
         const val ROLE_ADMIN = "Admin"
         const val ROLE_EDITOR = "Editor"
         const val ROLE_USER = "Usuario"
     }
+}
+
+private suspend fun <T> authResult(block: suspend () -> T): Result<T> = try {
+    Result.success(block())
+} catch (cancellation: CancellationException) {
+    throw cancellation
+} catch (throwable: Throwable) {
+    Result.failure(throwable)
 }

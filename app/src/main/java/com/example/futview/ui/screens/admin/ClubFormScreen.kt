@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -70,6 +71,15 @@ fun ClubFormScreen() {
     val teamsState by viewModel.teams.collectAsStateWithLifecycle()
     val teams = (teamsState as? UiState.Success)?.data.orEmpty()
 
+    var editingTeamId by rememberSaveable { mutableStateOf<String?>(null) }
+    val message by viewModel.message.collectAsStateWithLifecycle()
+    LaunchedEffect(message) {
+        message?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.consumeMessage()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -85,7 +95,7 @@ fun ClubFormScreen() {
             item {
                 FormCard(
                     title = "Ficha del club",
-                    subtitle = "Registro seleccionado",
+                    subtitle = if (editingTeamId != null) "Editando el club seleccionado" else "Nuevo registro",
                     icon = Icons.Outlined.Shield,
                     modifier = Modifier.padding(horizontal = 20.dp)
                 ) {
@@ -182,13 +192,29 @@ fun ClubFormScreen() {
 
                     AdminFormActions(
                         onSave = {
-                            Toast.makeText(context, "Club guardado", Toast.LENGTH_SHORT).show()
+                            val id = editingTeamId
+                            if (id == null) {
+                                viewModel.createTeam(name, city)
+                            } else {
+                                viewModel.updateTeam(id, name, city)
+                            }
                         },
                         onEdit = {
-                            Toast.makeText(context, "Edición habilitada", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                context,
+                                if (editingTeamId != null) {
+                                    "Editando el club seleccionado."
+                                } else {
+                                    "Toca un club de la lista para cargarlo al formulario."
+                                },
+                                Toast.LENGTH_SHORT
+                            ).show()
                         },
                         onDelete = {
-                            Toast.makeText(context, "Club eliminado", Toast.LENGTH_SHORT).show()
+                            editingTeamId?.let { viewModel.deleteTeam(it) }
+                                ?: run {
+                                    Toast.makeText(context, "Toca un club de la lista para eliminarlo.", Toast.LENGTH_SHORT).show()
+                                }
                         }
                     )
                 }
@@ -245,6 +271,11 @@ fun ClubFormScreen() {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .clickable {
+                                    editingTeamId = team.id
+                                    name = team.name
+                                    city = team.city
+                                }
                                 .padding(horizontal = 14.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {

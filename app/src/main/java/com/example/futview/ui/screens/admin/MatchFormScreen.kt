@@ -2,6 +2,7 @@ package com.example.futview.ui.screens.admin
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -36,6 +38,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -63,9 +66,7 @@ import com.example.futview.ui.theme.TextPrimary
 import com.example.futview.ui.theme.TextSecondary
 
 @Composable
-fun MatchFormScreen(
-    onDelete: () -> Unit = {}
-) {
+fun MatchFormScreen() {
     val context = LocalContext.current
 
     var date by rememberSaveable { mutableStateOf("") }
@@ -74,6 +75,8 @@ fun MatchFormScreen(
     var homeTeam by rememberSaveable { mutableStateOf("") }
     var awayTeam by rememberSaveable { mutableStateOf("") }
 
+    var matchday by rememberSaveable { mutableStateOf("") }
+
     val viewModel: MatchFormViewModel = viewModel(factory = MatchFormViewModel.Factory)
     val teamsState by viewModel.teams.collectAsStateWithLifecycle()
     val stadiumsState by viewModel.stadiums.collectAsStateWithLifecycle()
@@ -81,6 +84,15 @@ fun MatchFormScreen(
     val teams = (teamsState as? UiState.Success)?.data.orEmpty()
     val stadiums = (stadiumsState as? UiState.Success)?.data.orEmpty()
     val fixtureDays = (fixtureState as? UiState.Success)?.data.orEmpty()
+
+    var selectedMatchId by rememberSaveable { mutableStateOf<String?>(null) }
+    val message by viewModel.message.collectAsStateWithLifecycle()
+    LaunchedEffect(message) {
+        message?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.consumeMessage()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -136,6 +148,15 @@ fun MatchFormScreen(
                                 }
                             )
                         }
+                        Column(modifier = Modifier.weight(1f)) {
+                            FormLabel("Jornada")
+                            Spacer(Modifier.height(8.dp))
+                            FormTextField(
+                                value = matchday,
+                                onValueChange = { matchday = it.filter(Char::isDigit).take(2) },
+                                keyboardType = KeyboardType.Number
+                            )
+                        }
                     }
 
                     Spacer(Modifier.height(18.dp))
@@ -189,12 +210,17 @@ fun MatchFormScreen(
 
                     AdminFormActions(
                         onSave = {
-                            Toast.makeText(context, "Partido guardado", Toast.LENGTH_SHORT).show()
+                            viewModel.createMatch(date, matchday, time, stadium, homeTeam, awayTeam)
                         },
                         onEdit = {
-                            Toast.makeText(context, "Edición habilitada", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Toca un partido del fixture para seleccionarlo.", Toast.LENGTH_SHORT).show()
                         },
-                        onDelete = onDelete
+                        onDelete = {
+                            selectedMatchId?.let { viewModel.deleteMatch(it) }
+                                ?: run {
+                                    Toast.makeText(context, "Toca un partido del fixture para eliminarlo.", Toast.LENGTH_SHORT).show()
+                                }
+                        }
                     )
                 }
             }
@@ -216,6 +242,8 @@ fun MatchFormScreen(
             items(fixtureDays, key = { it.dateLabel }) { day ->
                 FixtureDayCard(
                     day = day,
+                    selectedMatchId = selectedMatchId,
+                    onSelectMatch = { id -> selectedMatchId = id },
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
@@ -232,6 +260,8 @@ fun MatchFormScreen(
 @Composable
 private fun FixtureDayCard(
     day: FixtureDay,
+    selectedMatchId: String?,
+    onSelectMatch: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -262,7 +292,7 @@ private fun FixtureDayCard(
         }
 
         day.matches.forEachIndexed { index, match ->
-            FixtureRow(match = match)
+            FixtureRow(match = match, selected = match.id == selectedMatchId, onSelect = { onSelectMatch(match.id) })
             if (index != day.matches.lastIndex) {
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 14.dp),
@@ -274,10 +304,12 @@ private fun FixtureDayCard(
 }
 
 @Composable
-private fun FixtureRow(match: Match) {
+private fun FixtureRow(match: Match, selected: Boolean, onSelect: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .background(if (selected) Field else Color.Transparent)
+            .clickable(onClick = onSelect)
             .padding(14.dp),
         verticalAlignment = Alignment.Top
     ) {

@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -85,6 +86,15 @@ fun UserFormScreen(
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     var roleIndex by rememberSaveable { mutableStateOf(0) }
 
+    var selectedUid by rememberSaveable { mutableStateOf<String?>(null) }
+    val message by viewModel.message.collectAsStateWithLifecycle()
+    LaunchedEffect(message) {
+        message?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.consumeMessage()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -109,7 +119,7 @@ fun UserFormScreen(
             item {
                 FormCard(
                     title = "Ficha del usuario",
-                    subtitle = "Registro seleccionado",
+                    subtitle = if (selectedUid != null) "Editando el rol del usuario seleccionado" else "Selecciona un usuario de la lista",
                     icon = Icons.Outlined.ManageAccounts,
                     modifier = Modifier.padding(horizontal = 20.dp)
                 ) {
@@ -208,13 +218,16 @@ fun UserFormScreen(
 
                     AdminFormActions(
                         onSave = {
-                            Toast.makeText(context, "Usuario guardado", Toast.LENGTH_SHORT).show()
+                            viewModel.updateRole(selectedUid, if (roleIndex == 0) "Admin" else "Editor")
                         },
                         onEdit = {
-                            Toast.makeText(context, "Edición habilitada", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Toca un usuario de la lista para cargar sus datos.", Toast.LENGTH_SHORT).show()
                         },
                         onDelete = {
-                            Toast.makeText(context, "Usuario eliminado", Toast.LENGTH_SHORT).show()
+                            selectedUid?.let { viewModel.removeUser(it) }
+                                ?: run {
+                                    Toast.makeText(context, "Selecciona un usuario de la lista.", Toast.LENGTH_SHORT).show()
+                                }
                         }
                     )
                 }
@@ -223,8 +236,8 @@ fun UserFormScreen(
             item {
                 AdminSectionHeader(
                     title = "Usuarios del sistema",
-                    subtitle = "1 administrador · 2 editores",
-                    trailing = "3 usuarios"
+                    subtitle = "${users.count { it.role == "Admin" }} administradores · ${users.count { it.role != "Admin" }} editores",
+                    trailing = "${users.size} usuarios"
                 )
             }
 
@@ -271,6 +284,12 @@ fun UserFormScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .clickable {
+                                    selectedUid = user.uid
+                                    name = user.name
+                                    email = user.email
+                                    roleIndex = if (user.role == "Admin") 0 else 1
+                                }
                                 .padding(horizontal = 14.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
