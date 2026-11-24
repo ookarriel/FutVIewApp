@@ -154,11 +154,17 @@ FutView es una app Android en **Kotlin + Jetpack Compose** para consultar inform
 - [x] Favoritos persistidos por usuario en `users/{uid}/favorites` (`UserFavoritesViewModel` + `FavoritesRepository`); con sesión activa se cargan y guardan automáticamente, y desaparecen al cerrar sesión.
 - [x] Reglas de seguridad escritas (`firestore.rules` + `firebase.json`); desplegar con `firebase deploy --only firestore:rules` y probar en consola (acción manual del usuario).
 
-### Fase 4 — Mapas
-- [ ] API key + dependencias Maps Compose.
-- [ ] Mapa con marcador en detalle de estadio.
-- [ ] Intent `geo:` como fallback / botón "cómo llegar".
-- [ ] (Opcional) Mapa de todos los estadios.
+### Fase 4 — Mapas ✅ COMPLETADA (falta pegar tu MAPS_API_KEY)
+- [x] Dependencias `play-services-maps` + `maps-compose`; clave vía `local.properties` (`MAPS_API_KEY=`) inyectada al manifest con placeholders (no hardcodeada). **Pegar tu clave en `local.properties`.**
+- [x] Mapa embebido con marcador en `StadiumDetailScreen` (coordenadas del estadio; si no tiene, se oculta).
+- [x] Botón "Cómo llegar en mapas" con Intent `geo:` (con o sin coordenadas).
+- [x] Permisos de ubicación: no requeridos (sin geolocalización por ahora).
+
+### Fase 4-B — API de fútbol (evaluación) ✅ Factible
+- **Recomendada: API-Football** (api-sports.io): plan gratuito con 100 req/día, cubre la Liga de Primera de Chile (league 265) con fixture, marcadores y estados. Actualización diaria = 1-2 requests.
+- Alternativa sin registro: TheSportsDB (datos limitados). football-data.org no cubre Chile. Sportmonks: pago.
+- **Implementado**: `data/remote/ApiFootball.kt` (Retrofit) + `ApiFootballSyncRepository` (descarga fixtures 2026 → escribe `matches` con ids "af-*" y equipos del proveedor; timestamps en hora de Chile) + `ApiSyncViewModel` (botón manual en admin + **sincronización automática cada 24 h** al abrir la app con sesión).
+- **Pendiente del usuario**: pegar tu clave en `local.properties` (`API_FOOTBALL_KEY=`). Sin clave, el botón informa cómo hacerlo.
 
 ### Fase 5 — Pulido y release
 - [ ] Dataset completo del fútbol chileno (Liga de Primera).

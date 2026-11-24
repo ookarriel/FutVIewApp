@@ -1,5 +1,8 @@
 package com.example.futview.ui.screens
 
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +32,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.example.futview.data.Match
 import com.example.futview.data.Stadium
 import com.example.futview.ui.components.DemoBanner
@@ -224,9 +234,45 @@ fun StadiumDetailScreen(
                     Spacer(Modifier.height(14.dp))
                     DetailField(label = "Equipo local", value = stadium.homeTeam)
                     Spacer(Modifier.height(16.dp))
+
+                    val context = LocalContext.current
+                    val latitude = stadium.latitude.toDoubleOrNull()
+                    val longitude = stadium.longitude.toDoubleOrNull()
+
+                    // Mapa embebido cuando el estadio tiene coordenadas.
+                    if (latitude != null && longitude != null) {
+                        GoogleMap(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(220.dp)
+                                .clip(RoundedCornerShape(12.dp)),
+                            cameraPositionState = rememberCameraPositionState {
+                                position = CameraPosition.fromLatLngZoom(LatLng(latitude, longitude), 15f)
+                            }
+                        ) {
+                            Marker(
+                                state = MarkerState(position = LatLng(latitude, longitude)),
+                                title = stadium.name,
+                                snippet = stadium.address
+                            )
+                        }
+                        Spacer(Modifier.height(16.dp))
+                    }
+
                     OutlineButton(
-                        text = "Abrir dirección en mapas",
-                        onClick = {}
+                        text = "Cómo llegar en mapas",
+                        onClick = {
+                            val uri = if (latitude != null && longitude != null) {
+                                Uri.parse("geo:$latitude,$longitude?q=$latitude,$longitude")
+                            } else {
+                                Uri.parse("geo:0,0?q=" + Uri.encode("${stadium.name} ${stadium.city}"))
+                            }
+                            try {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                            } catch (error: Exception) {
+                                Toast.makeText(context, "No se encontró una app de mapas.", Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     )
                     Spacer(Modifier.height(10.dp))
                     Text(

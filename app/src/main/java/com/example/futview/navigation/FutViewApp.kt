@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -18,6 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.futview.data.AppContainer
@@ -25,6 +27,7 @@ import com.example.futview.data.Match
 import com.example.futview.data.Stadium
 import com.example.futview.data.Team
 import com.example.futview.data.model.initialsOf
+import com.example.futview.ui.viewmodel.ApiSyncViewModel
 import com.example.futview.ui.viewmodel.AuthStateViewModel
 import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.viewmodel.UserFavoritesViewModel
@@ -110,6 +113,7 @@ fun FutViewApp() {
     val authViewModel: AuthStateViewModel = viewModel(factory = AuthStateViewModel.Factory)
     val authState by authViewModel.authUser.collectAsStateWithLifecycle()
     val sessionUser = (authState as? UiState.Success)?.data
+    val signedIn = sessionUser != null
 
     if (authState is UiState.Loading) {
         Box(
@@ -121,6 +125,15 @@ fun FutViewApp() {
             CircularProgressIndicator()
         }
         return
+    }
+
+    val apiSyncViewModel: ApiSyncViewModel = viewModel(factory = ApiSyncViewModel.Factory)
+    val appContext = LocalContext.current.applicationContext
+    LaunchedEffect(signedIn) {
+        if (signedIn) {
+            // Actualización diaria silenciosa del fixture (requiere API_FOOTBALL_KEY).
+            apiSyncViewModel.syncIfDue(appContext)
+        }
     }
 
     val roleFlow = remember(sessionUser?.uid) {
@@ -140,7 +153,6 @@ fun FutViewApp() {
     // Datos del repositorio para las rutas de detalle y las búsquedas de estadio.
     // Sin sesión no se suscriben listeners (evita PERMISSION_DENIED); con sesión, cualquier
     // denegación se absorbe aquí (los banners de cada pantalla informan al usuario).
-    val signedIn = sessionUser != null
     val teams by remember(signedIn) {
         if (signedIn) {
             AppContainer.teamRepository.observeTeams().catch { emit(emptyList()) }

@@ -13,7 +13,9 @@ import com.example.futview.data.StandingRow
 import com.example.futview.data.SystemUser
 import com.example.futview.data.Team
 import com.example.futview.data.model.initialsOf
+import android.content.Context
 import com.example.futview.data.repository.FirestoreSeedRepository
+import com.example.futview.data.repository.ApiFootballSyncRepository
 import com.example.futview.data.repository.MatchRepository
 import com.example.futview.data.repository.StadiumRepository
 import com.example.futview.data.repository.TeamRepository
@@ -452,5 +454,40 @@ class SeedViewModel : ViewModel() {
 
     companion object {
         val Factory = viewModelFactory { initializer { SeedViewModel() } }
+    }
+}
+
+/** Sincronización diaria con API-Football (botón admin + automática cada 24 h). */
+class ApiSyncViewModel(private val syncRepository: ApiFootballSyncRepository) : ViewModel() {
+
+    private val _busy = MutableStateFlow(false)
+    val busy: StateFlow<Boolean> = _busy.asStateFlow()
+
+    private val _message = MutableStateFlow<String?>(null)
+    val message: StateFlow<String?> = _message.asStateFlow()
+
+    fun consumeMessage() {
+        _message.value = null
+    }
+
+    fun sync(context: Context, force: Boolean) {
+        if (_busy.value) return
+        _busy.value = true
+        viewModelScope.launch {
+            syncRepository.sync(context, force)
+                .onSuccess { _message.value = it }
+                .onFailure { _message.value = it.message ?: "Error de sincronización." }
+            _busy.value = false
+        }
+    }
+
+    fun syncIfDue(context: Context) {
+        viewModelScope.launch {
+            syncRepository.sync(context, force = false)
+        }
+    }
+
+    companion object {
+        val Factory = viewModelFactory { initializer { ApiSyncViewModel(ApiFootballSyncRepository()) } }
     }
 }
