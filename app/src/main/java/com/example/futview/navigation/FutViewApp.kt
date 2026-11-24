@@ -28,6 +28,8 @@ import com.example.futview.data.model.initialsOf
 import com.example.futview.ui.viewmodel.AuthStateViewModel
 import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.viewmodel.UserFavoritesViewModel
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flowOf
 import com.example.futview.ui.components.AdminBottomBar
 import com.example.futview.ui.components.FutViewBottomBar
 import com.example.futview.ui.components.ScreenHeader
@@ -136,11 +138,37 @@ fun FutViewApp() {
     var pendingEmail by rememberSaveable { mutableStateOf("") }
 
     // Datos del repositorio para las rutas de detalle y las búsquedas de estadio.
-    // Fase 3: las pantallas de detalle cargarán por id con sus propios ViewModels.
-    val teams by AppContainer.teamRepository.observeTeams().collectAsState(initial = emptyList())
-    val stadiums by AppContainer.stadiumRepository.observeStadiums().collectAsState(initial = emptyList())
-    val upcomingMatches by AppContainer.matchRepository.observeUpcomingMatches().collectAsState(initial = emptyList())
-    val results by AppContainer.matchRepository.observeResults().collectAsState(initial = emptyList())
+    // Sin sesión no se suscriben listeners (evita PERMISSION_DENIED); con sesión, cualquier
+    // denegación se absorbe aquí (los banners de cada pantalla informan al usuario).
+    val signedIn = sessionUser != null
+    val teams by remember(signedIn) {
+        if (signedIn) {
+            AppContainer.teamRepository.observeTeams().catch { emit(emptyList()) }
+        } else {
+            flowOf(emptyList())
+        }
+    }.collectAsState(initial = emptyList())
+    val stadiums by remember(signedIn) {
+        if (signedIn) {
+            AppContainer.stadiumRepository.observeStadiums().catch { emit(emptyList()) }
+        } else {
+            flowOf(emptyList())
+        }
+    }.collectAsState(initial = emptyList())
+    val upcomingMatches by remember(signedIn) {
+        if (signedIn) {
+            AppContainer.matchRepository.observeUpcomingMatches().catch { emit(emptyList()) }
+        } else {
+            flowOf(emptyList())
+        }
+    }.collectAsState(initial = emptyList())
+    val results by remember(signedIn) {
+        if (signedIn) {
+            AppContainer.matchRepository.observeResults().catch { emit(emptyList()) }
+        } else {
+            flowOf(emptyList())
+        }
+    }.collectAsState(initial = emptyList())
 
     val favoritesViewModel: UserFavoritesViewModel = viewModel(factory = UserFavoritesViewModel.Factory)
     val favoritesState by favoritesViewModel.favoriteIds.collectAsStateWithLifecycle()
