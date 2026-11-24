@@ -56,7 +56,6 @@ fun MatchesScreen(
     SetStatusBarAppearance(lightIcons = true)
 
     var query by rememberSaveable { mutableStateOf("") }
-    var month by rememberSaveable { mutableStateOf("Febrero 2027") }
     var filter by rememberSaveable { mutableStateOf("Todos") }
 
     val viewModel: MatchesViewModel = viewModel(factory = MatchesViewModel.Factory)
@@ -116,11 +115,6 @@ fun MatchesScreen(
                         .padding(horizontal = 20.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    FilterDropdownPill(
-                        label = month,
-                        options = listOf("Febrero 2027", "Marzo 2027", "Abril 2027"),
-                        onSelect = { month = it }
-                    )
                     FilterPill(
                         label = "Todos",
                         selected = filter == "Todos",
@@ -173,7 +167,7 @@ fun MatchesScreen(
 
             item {
                 InfoNote(
-                    text = "Horarios de Chile continental. Calendario ficticio de la temporada 2027, sujeto a cambios."
+                    text = "Horarios en hora de Chile continental. Los partidos se sincronizan desde Firestore."
                 )
             }
         }

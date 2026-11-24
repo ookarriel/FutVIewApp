@@ -154,7 +154,7 @@ fun TeamsScreen(
 
             item {
                 Text(
-                    text = "Temporada 2027 · Orden alfabético",
+                    text = "Primera División · Orden alfabético",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary,
                     modifier = Modifier.padding(horizontal = 20.dp)

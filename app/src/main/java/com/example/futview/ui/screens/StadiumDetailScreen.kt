@@ -260,7 +260,7 @@ fun StadiumDetailScreen(
 
             item {
                 Text(
-                    text = "Dirección, aforo y programación de ejemplo.",
+                    text = "Programación sincronizada desde Firestore.",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary,
                     modifier = Modifier.padding(horizontal = 20.dp)

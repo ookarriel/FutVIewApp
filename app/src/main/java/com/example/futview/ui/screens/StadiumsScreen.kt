@@ -151,7 +151,7 @@ fun StadiumsScreen(
 
             item {
                 Text(
-                    text = "Región Metropolitana · Temporada 2027",
+                    text = "Sedes de la competición",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary,
                     modifier = Modifier.padding(horizontal = 20.dp)
@@ -181,7 +181,7 @@ fun StadiumsScreen(
 
             item {
                 InfoNote(
-                    text = "Direcciones, aforos y sedes de ejemplo. Consulta las condiciones de acceso antes de ir al estadio."
+                    text = "Consulta las condiciones de acceso antes de ir al estadio."
                 )
             }
         }

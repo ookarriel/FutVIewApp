@@ -418,7 +418,7 @@ fun NotificationsScreen(
 
             item {
                 Text(
-                    text = "Avisos de ejemplo · Calendario ficticio de 2027.",
+                    text = "Notificaciones de la app.",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary,
                     modifier = Modifier.padding(horizontal = 20.dp)
@@ -486,7 +486,7 @@ fun HelpCenterScreen(
             item {
                 FaqCard(
                     question = "¿En qué horario se muestran los partidos?",
-                    answer = "Usamos la hora de Chile continental. El calendario es ficticio y de demostración.",
+                    answer = "Usamos la hora de Chile continental en todos los horarios de partidos.",
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }
@@ -500,7 +500,7 @@ fun HelpCenterScreen(
             item {
                 FaqCard(
                     question = "¿Los resultados son oficiales?",
-                    answer = "No. Esta versión utiliza datos de demostración de la temporada 2027.",
+                    answer = "No. La app se conecta a Firestore y muestra los datos en tiempo real.",
                     modifier = Modifier.padding(horizontal = 20.dp)
                 )
             }

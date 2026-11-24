@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import com.example.futview.data.Match
 import com.example.futview.data.StandingRow
 import com.example.futview.ui.components.FirestoreErrorBanner
+import com.example.futview.ui.components.FilterPill
 import com.example.futview.ui.components.LoadingState
 import com.example.futview.ui.viewmodel.ResultsViewModel
 import com.example.futview.ui.viewmodel.UiState
@@ -59,8 +60,8 @@ fun ResultsScreen(
     SetStatusBarAppearance(lightIcons = true)
 
     var query by rememberSaveable { mutableStateOf("") }
-    var season by rememberSaveable { mutableStateOf("Temporada 2027") }
-    var matchday by rememberSaveable { mutableStateOf("Jornada 1") }
+
+    // TODO Fase 4: filtros por jornada/temporada derivados de los datos de Firestore.
 
     val viewModel: ResultsViewModel = viewModel(factory = ResultsViewModel.Factory)
     val resultsState by viewModel.results.collectAsStateWithLifecycle()
@@ -115,16 +116,10 @@ fun ResultsScreen(
                         .padding(horizontal = 20.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    FilterDropdownPill(
-                        label = season,
-                        options = listOf("Temporada 2027", "Temporada 2026"),
-                        onSelect = { season = it }
-                    )
-                    FilterDropdownPill(
-                        label = matchday,
-                        options = listOf("Jornada 1", "Jornada 2", "Jornada 3", "Jornada 4"),
-                        onSelect = { matchday = it },
-                        selected = true
+                    FilterPill(
+                        label = "Finalizados",
+                        selected = true,
+                        onClick = {}
                     )
                 }
             }
@@ -170,7 +165,7 @@ fun ResultsScreen(
             }
 
             item {
-                SectionHeader(title = "Tabla de posiciones", trailing = "Jornada 1")
+                SectionHeader(title = "Tabla de posiciones", trailing = "Temporada 2026")
             }
 
             item {
@@ -200,7 +195,7 @@ fun ResultsScreen(
 
             item {
                 InfoNote(
-                    text = "Clasificación de ejemplo, no oficial. Los empates en puntos y diferencia de goles se ordenan por nombre."
+                    text = "La tabla se calcula con los resultados registrados. Los empates se ordenan por nombre."
                 )
             }
         }

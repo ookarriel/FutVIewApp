@@ -44,6 +44,7 @@ import com.example.futview.data.Team
 import com.example.futview.ui.components.FirestoreErrorBanner
 import com.example.futview.ui.components.LoadingState
 import com.example.futview.ui.viewmodel.ClubFormViewModel
+import com.example.futview.ui.viewmodel.SeedViewModel
 import com.example.futview.ui.viewmodel.UiState
 import com.example.futview.ui.components.AdminFormActions
 import com.example.futview.ui.components.AdminSectionHeader
@@ -53,6 +54,7 @@ import com.example.futview.ui.components.FormCard
 import com.example.futview.ui.components.FormLabel
 import com.example.futview.ui.components.FormTextField
 import com.example.futview.ui.components.InfoNote
+import com.example.futview.ui.components.OutlineButton
 import com.example.futview.ui.theme.Border
 import com.example.futview.ui.theme.Card
 import com.example.futview.ui.theme.Field
@@ -80,6 +82,16 @@ fun ClubFormScreen() {
         }
     }
 
+    val seedViewModel: SeedViewModel = viewModel(factory = SeedViewModel.Factory)
+    val seedBusy by seedViewModel.busy.collectAsStateWithLifecycle()
+    val seedMessage by seedViewModel.message.collectAsStateWithLifecycle()
+    LaunchedEffect(seedMessage) {
+        seedMessage?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            seedViewModel.consumeMessage()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -91,6 +103,16 @@ fun ClubFormScreen() {
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item { DemoBanner() }
+
+            if (teams.isEmpty() && teamsState is UiState.Success) {
+                item {
+                    OutlineButton(
+                        text = if (seedBusy) "Cargando datos…" else "Cargar datos de la Liga 2026",
+                        onClick = { seedViewModel.seed() },
+                        modifier = Modifier.padding(horizontal = 20.dp)
+                    )
+                }
+            }
 
             item {
                 FormCard(
@@ -224,7 +246,7 @@ fun ClubFormScreen() {
                 AdminSectionHeader(
                     title = "Clubes creados",
                     subtitle = "Solo equipos de Primera División.",
-                    trailing = "4 clubes"
+                    trailing = "${teams.size} clubes"
                 )
             }
 

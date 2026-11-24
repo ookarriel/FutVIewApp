@@ -267,7 +267,7 @@ fun StadiumFormScreen() {
                 AdminSectionHeader(
                     title = "Estadios habilitados",
                     subtitle = "Sedes disponibles para programar partidos.",
-                    trailing = "4 sedes"
+                    trailing = "${stadiums.size} sedes"
                 )
             }
 
@@ -358,7 +358,7 @@ fun StadiumFormScreen() {
 
             item {
                 InfoNote(
-                    text = "Aforos y coordenadas de ejemplo. Valida la sede antes de publicar un partido."
+                    text = "Valida la dirección y el aforo antes de publicar un partido."
                 )
             }
         }

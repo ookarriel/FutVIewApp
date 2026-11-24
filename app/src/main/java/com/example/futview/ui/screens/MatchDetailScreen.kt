@@ -50,7 +50,7 @@ fun MatchDetailScreen(
     ) {
         ScreenHeader(
             title = "Detalle del partido",
-            subtitle = "Jornada ${match.matchday} · Primera División 2027",
+            subtitle = "Jornada ${match.matchday} · Primera División",
             onAvatarClick = onAvatarClick,
             onBack = onBack
         )
@@ -132,7 +132,7 @@ fun MatchDetailScreen(
 
             item {
                 Text(
-                    text = "Horarios y programación ficticios, sujetos a cambios.",
+                    text = "Horarios en hora de Chile continental.",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary,
                     modifier = Modifier.padding(horizontal = 20.dp)

@@ -13,6 +13,7 @@ import com.example.futview.data.StandingRow
 import com.example.futview.data.SystemUser
 import com.example.futview.data.Team
 import com.example.futview.data.model.initialsOf
+import com.example.futview.data.repository.FirestoreSeedRepository
 import com.example.futview.data.repository.MatchRepository
 import com.example.futview.data.repository.StadiumRepository
 import com.example.futview.data.repository.TeamRepository
@@ -420,5 +421,36 @@ class InviteUserViewModel(private val userRepository: UserRepository) : ViewMode
         val Factory = viewModelFactory {
             initializer { InviteUserViewModel(AppContainer.userRepository) }
         }
+    }
+}
+
+/** Siembra el dataset inicial de la Liga de Primera 2026 en Firestore (solo si está vacío). */
+class SeedViewModel : ViewModel() {
+
+    private val seedRepository = FirestoreSeedRepository()
+
+    private val _busy = MutableStateFlow(false)
+    val busy: StateFlow<Boolean> = _busy.asStateFlow()
+
+    private val _message = MutableStateFlow<String?>(null)
+    val message: StateFlow<String?> = _message.asStateFlow()
+
+    fun consumeMessage() {
+        _message.value = null
+    }
+
+    fun seed() {
+        if (_busy.value) return
+        _busy.value = true
+        viewModelScope.launch {
+            seedRepository.seedLiga2026()
+                .onSuccess { _message.value = it }
+                .onFailure { _message.value = it.message ?: "Error al sembrar los datos." }
+            _busy.value = false
+        }
+    }
+
+    companion object {
+        val Factory = viewModelFactory { initializer { SeedViewModel() } }
     }
 }

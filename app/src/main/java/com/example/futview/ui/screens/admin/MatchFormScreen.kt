@@ -250,7 +250,7 @@ fun MatchFormScreen() {
 
             item {
                 InfoNote(
-                    text = "Calendario ficticio, no oficial. El partido resaltado corresponde al formulario."
+                    text = "Toca un partido del fixture para seleccionarlo y eliminarlo."
                 )
             }
         }

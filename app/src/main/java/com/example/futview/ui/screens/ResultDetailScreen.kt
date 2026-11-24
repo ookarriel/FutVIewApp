@@ -55,7 +55,7 @@ fun ResultDetailScreen(
     ) {
         ScreenHeader(
             title = "Detalle del resultado",
-            subtitle = "Jornada ${match.matchday} · Primera División 2027",
+            subtitle = "Jornada ${match.matchday} · Primera División",
             onAvatarClick = onAvatarClick,
             onBack = onBack
         )

@@ -202,7 +202,7 @@ fun TeamDetailScreen(
                     Spacer(Modifier.height(14.dp))
                     DetailField(label = "Ciudad", value = team.city)
                     Spacer(Modifier.height(14.dp))
-                    DetailField(label = "Competición", value = "Primera División · Temporada 2027")
+                    DetailField(label = "Competición", value = "Primera División")
                     Spacer(Modifier.height(14.dp))
                     DetailField(label = "Estadio local", value = team.stadium)
                     Spacer(Modifier.height(16.dp))
