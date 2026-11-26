@@ -56,11 +56,3 @@ Si publicas la release, conserva `app/build/outputs/mapping/release/mapping.txt`
 3. Lectura solo autenticada; escritura de catálogos solo Admin/Editor; favoritos solo del dueño.
 4. Promoción a admin: editar manualmente `users/{uid}.role = "Admin"` en la consola de Firestore.
 
-## Notas de costo cero
-
-- ESPN y OpenFreeMap son gratuitos y no requieren clave ni tarjeta.
-- Sin APIs pagadas: se eliminó API-Football (su plan gratuito solo servía 2021–2023).
-
-## Estado
-
-Ver `DIAGNOSTICO.md` para el detalle de fases completadas y lo que falta (icono final, `applicationId` definitivo, keystore de release y build con minify).
