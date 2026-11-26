@@ -59,8 +59,6 @@ fun ResultsScreen(
     // Al buscar, la paginación vuelve a la primera página.
     LaunchedEffect(query) { visibleCount = PAGE_SIZE }
 
-    // TODO Fase 4: filtros por jornada/temporada derivados de los datos de Firestore.
-
     val viewModel: ResultsViewModel = viewModel(factory = ResultsViewModel.Factory)
     val resultsState by viewModel.results.collectAsStateWithLifecycle()
     val standingsState by viewModel.standings.collectAsStateWithLifecycle()

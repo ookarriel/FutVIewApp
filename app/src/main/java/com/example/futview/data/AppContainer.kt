@@ -15,8 +15,7 @@ import com.example.futview.data.repository.UserRepository
 
 /**
  * Inyección manual (sin Hilt): punto único donde se elige la implementación de cada repositorio.
- *
- * Fase 3: todos los repositorios leen y escriben en Firestore.
+ * Todos los repositorios leen y escriben en Firestore.
  */
 object AppContainer {
     val userRepository: UserRepository = FirestoreUserRepository()

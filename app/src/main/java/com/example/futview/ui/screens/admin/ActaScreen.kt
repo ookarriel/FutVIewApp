@@ -72,7 +72,6 @@ fun ActaScreen() {
     val matchesState by viewModel.matches.collectAsStateWithLifecycle()
     val standingsState by viewModel.standings.collectAsStateWithLifecycle()
 
-    // TODO Fase 3: guardar el acta en Firestore al confirmar.
     val matches = (matchesState as? UiState.Success)?.data.orEmpty()
     val standings = (standingsState as? UiState.Success)?.data.orEmpty()
 

@@ -13,8 +13,7 @@ import kotlinx.coroutines.tasks.await
 
 /**
  * Implementación de [UserRepository] sobre Firestore (colección `users`).
- * Conectada en la Fase 2 para el rol del usuario; la Fase 3 extiende
- * la lectura del directorio de usuarios del panel admin.
+ * Cubre el rol del usuario y el directorio de usuarios del panel admin.
  */
 class FirestoreUserRepository : UserRepository {
 

@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.tasks.await
 
 /**
- * Implementaciones de repositorio sobre Firestore (Fase 3).
+ * Implementaciones de repositorio sobre Firestore.
  * Colecciones: `teams`, `stadiums`, `matches` y `users/{uid}/favorites`.
  */
 

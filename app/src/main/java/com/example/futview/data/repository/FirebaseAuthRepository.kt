@@ -44,7 +44,7 @@ class FirebaseAuthRepository(
         val user = result.user ?: error("No se pudo crear la cuenta.")
         user.updateProfile(userProfileChangeRequest { displayName = name }).await()
         user.sendEmailVerification().await()
-        // Colección `users` con rol por defecto (Fase 2).
+        // Documento `users` con rol por defecto.
         userRepository.ensureUserDoc(user.uid, name, email)
         user.toAuthUser()
     }

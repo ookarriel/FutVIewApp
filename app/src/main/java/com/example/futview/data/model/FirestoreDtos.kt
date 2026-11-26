@@ -16,8 +16,6 @@ import com.google.firebase.firestore.GeoPoint
  * - Todos los campos tienen valor por defecto para que Firestore pueda instanciarlos.
  * - Los mapeadores resuelven las referencias entre colecciones (ids) una vez que el
  *   repositorio cargó los documentos relacionados.
- *
- * Se usan desde la Fase 3, cuando las implementaciones de repositorio lean de Firestore.
  */
 
 /** Colección `teams`. */
