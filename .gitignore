@@ -1,15 +1,27 @@
+# IDE (Android Studio / IntelliJ)
 *.iml
-.gradle
+.idea/
+
+# Gradle
+.gradle/
+build/
+
+# SDK local de cada máquina (no compartir)
 /local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
+
+# Kotlin (sesiones del compilador)
+.kotlin/
+
+# Nativos / captures
 .externalNativeBuild
 .cxx
-local.properties
+/captures
+
+# Claves de firma: nunca al repositorio
+*.jks
+*.keystore
+*.keystore.id
+
+# Sistema
+.DS_Store
+*.hprof
